@@ -1,0 +1,1971 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#0a0a0c" />
+<title>Pascal's Party Beerpong Cup 🏆</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Bungee+Inline&family=Sora:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🏓%3C/text%3E%3C/svg%3E">
+<style>
+  /* ==========================================================
+     PASCAL'S PARTY BEERPONG CUP
+     Single-file static app. Hosted on GitHub Pages.
+     Database: Firebase Realtime Database (Spark / free).
+     ========================================================== */
+
+  :root {
+    --bg-0:        #08070a;
+    --bg-1:        #11101a;
+    --bg-2:        #1a1824;
+    --bg-elev:    #221f30;
+    --line:        rgba(255,255,255,0.07);
+    --line-strong: rgba(255,255,255,0.15);
+
+    --red:        #ff2e4d;
+    --red-bright: #ff4d6a;
+    --red-deep:   #c2123a;
+    --red-glow:   rgba(255, 46, 77, 0.55);
+
+    --gold:       #ffd166;
+    --gold-deep:  #f6a821;
+    --foam:       #fff4d6;
+
+    --pink:       #ff5fa2;
+    --purple:     #7c3aed;
+
+    --text:        #f5f3f0;
+    --text-dim:    #b6b1c5;
+    --text-muted:  #7a7591;
+
+    --ok:   #34d399;
+    --warn: #fbbf24;
+    --err:  #ff6b6b;
+
+    --radius-sm: 10px;
+    --radius:    16px;
+    --radius-lg: 24px;
+
+    --nav-h: 76px;
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+
+    --shadow-pop: 0 10px 40px -10px rgba(255, 46, 77, 0.55), 0 4px 20px rgba(0,0,0,0.6);
+  }
+
+  * { box-sizing: border-box; }
+  *::selection { background: var(--red); color: #fff; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overscroll-behavior-y: contain;
+  }
+
+  body {
+    font-family: 'Sora', system-ui, sans-serif;
+    background: var(--bg-0);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+    line-height: 1.5;
+    min-height: 100dvh;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* Atmospheric background — radial reds + grain */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 40% at 20% 0%,    rgba(255, 46, 77, 0.18), transparent 60%),
+      radial-gradient(ellipse 50% 35% at 90% 15%,   rgba(255, 95, 162, 0.10), transparent 60%),
+      radial-gradient(ellipse 80% 50% at 50% 100%,  rgba(124, 58, 237, 0.10), transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.06 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    opacity: 0.5;
+    mix-blend-mode: overlay;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* Floating decorative cups + balls in the background */
+  .deco {
+    position: fixed;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.07;
+    font-size: 80px;
+    user-select: none;
+    animation: float-deco 14s ease-in-out infinite;
+    filter: drop-shadow(0 0 8px var(--red));
+  }
+  .deco.d1 { top: 10%;  left: -20px; animation-delay: 0s;   }
+  .deco.d2 { top: 35%;  right: -10px; animation-delay: -3s; font-size: 60px; }
+  .deco.d3 { top: 65%;  left: 5%;     animation-delay: -7s; font-size: 50px; }
+  .deco.d4 { bottom: 18%; right: 8%;  animation-delay: -11s; }
+  @keyframes float-deco {
+    0%,100% { transform: translateY(0) rotate(0deg); }
+    50%     { transform: translateY(-18px) rotate(8deg); }
+  }
+
+  /* ============ App shell ============ */
+  .app {
+    position: relative;
+    z-index: 2;
+    max-width: 540px;
+    margin: 0 auto;
+    padding: 0 16px calc(var(--nav-h) + var(--safe-bottom) + 32px);
+    min-height: 100dvh;
+  }
+
+  /* ============ Header ============ */
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    padding: 14px 0 10px;
+    background: linear-gradient(180deg, rgba(8,7,10,0.95) 0%, rgba(8,7,10,0.85) 70%, rgba(8,7,10,0) 100%);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+  .header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+  }
+  .logo-mark {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--red) 0%, var(--red-deep) 100%);
+    display: grid;
+    place-items: center;
+    font-size: 22px;
+    box-shadow: 0 6px 16px -4px var(--red-glow), inset 0 1px 0 rgba(255,255,255,0.2);
+    flex-shrink: 0;
+    animation: logo-pulse 2.5s ease-in-out infinite;
+  }
+  @keyframes logo-pulse {
+    0%,100% { transform: rotate(-3deg); }
+    50%     { transform: rotate(3deg) scale(1.05); }
+  }
+  .logo-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1;
+    min-width: 0;
+  }
+  .logo-title {
+    font-family: 'Bungee', sans-serif;
+    font-size: 14px;
+    letter-spacing: 0.02em;
+    background: linear-gradient(90deg, var(--foam) 0%, var(--gold) 50%, var(--red) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-transform: uppercase;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .logo-sub {
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 3px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  .lang-toggle {
+    display: flex;
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 3px;
+    flex-shrink: 0;
+  }
+  .lang-toggle button {
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    font-family: 'Sora', sans-serif;
+    font-weight: 700;
+    font-size: 11px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    transition: all 0.2s ease;
+  }
+  .lang-toggle button.active {
+    background: linear-gradient(135deg, var(--red), var(--red-deep));
+    color: #fff;
+    box-shadow: 0 2px 8px -2px var(--red-glow);
+  }
+
+  /* ============ Section headings & layout ============ */
+  .view {
+    display: none;
+    animation: view-in 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+  }
+  .view.active { display: block; }
+  @keyframes view-in {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .view-header {
+    padding: 12px 0 18px;
+  }
+  .view-title {
+    font-family: 'Bungee', sans-serif;
+    font-size: clamp(28px, 8vw, 36px);
+    line-height: 1;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.01em;
+  }
+  .view-title .accent {
+    color: var(--red);
+    text-shadow: 0 0 20px var(--red-glow);
+  }
+  .view-sub {
+    color: var(--text-dim);
+    font-size: 14px;
+    margin-top: 8px;
+  }
+
+  /* ============ Cards ============ */
+  .card {
+    background: linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 100%);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 18px;
+    margin-bottom: 14px;
+    position: relative;
+  }
+  .card-title {
+    font-family: 'Bungee', sans-serif;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin: 0 0 12px;
+  }
+
+  /* ============ Buttons ============ */
+  .btn {
+    appearance: none;
+    border: none;
+    cursor: pointer;
+    font-family: 'Sora', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    padding: 14px 22px;
+    border-radius: 14px;
+    background: var(--bg-elev);
+    color: var(--text);
+    transition: transform 0.12s ease, box-shadow 0.2s ease, background 0.2s ease;
+    width: 100%;
+    letter-spacing: 0.02em;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .btn:active { transform: scale(0.96); }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--red) 0%, var(--red-deep) 100%);
+    color: #fff;
+    box-shadow: 0 8px 22px -8px var(--red-glow), inset 0 1px 0 rgba(255,255,255,0.2);
+    font-family: 'Bungee', sans-serif;
+    font-size: 15px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .btn-primary:hover { box-shadow: 0 12px 28px -8px var(--red-glow); }
+  .btn-primary:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none;
+  }
+
+  .btn-ghost {
+    background: transparent;
+    border: 1px solid var(--line-strong);
+    color: var(--text);
+  }
+  .btn-ghost:hover { background: var(--bg-elev); }
+
+  .btn-danger {
+    background: transparent;
+    border: 1px solid rgba(255, 107, 107, 0.4);
+    color: var(--err);
+  }
+  .btn-danger:hover { background: rgba(255, 107, 107, 0.1); }
+
+  .btn-sm { font-size: 13px; padding: 9px 14px; }
+  .btn-icon {
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    border-radius: 10px;
+    display: inline-grid;
+    place-items: center;
+    font-size: 16px;
+  }
+
+  .btn-bouncy:active {
+    animation: bouncy 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+  }
+  @keyframes bouncy {
+    0%   { transform: scale(1); }
+    30%  { transform: scale(0.92); }
+    60%  { transform: scale(1.06); }
+    100% { transform: scale(1); }
+  }
+
+  /* ============ Inputs ============ */
+  .input, .select {
+    width: 100%;
+    background: var(--bg-1);
+    border: 1px solid var(--line-strong);
+    color: var(--text);
+    font-family: 'Sora', sans-serif;
+    font-size: 16px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .input:focus, .select:focus {
+    outline: none;
+    border-color: var(--red);
+    box-shadow: 0 0 0 3px var(--red-glow);
+  }
+  .select {
+    appearance: none;
+    -webkit-appearance: none;
+    padding-right: 40px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23ff2e4d' d='M6 8 0 0h12z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    cursor: pointer;
+  }
+  .input-row { display: flex; gap: 10px; }
+  .input-row > .input { flex: 1; }
+
+  /* ============ Leaderboard ============ */
+  .leaderboard {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .lb-head {
+    display: grid;
+    grid-template-columns: 36px 1fr 60px 50px;
+    gap: 10px;
+    padding: 0 14px;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+    align-items: center;
+  }
+  .lb-head .col-mid { text-align: right; }
+  .lb-head .col-end { text-align: right; }
+
+  .lb-row {
+    display: grid;
+    grid-template-columns: 36px 1fr 60px 50px;
+    gap: 10px;
+    padding: 14px;
+    background: var(--bg-1);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    align-items: center;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .lb-row:active { transform: scale(0.99); }
+  .lb-row.rank-1 {
+    background: linear-gradient(135deg, rgba(255, 209, 102, 0.12), rgba(255, 46, 77, 0.08));
+    border-color: rgba(255, 209, 102, 0.35);
+    box-shadow: 0 0 24px -10px var(--gold);
+    position: relative;
+    overflow: hidden;
+  }
+  .lb-row.rank-1::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(120deg, transparent 30%, rgba(255, 209, 102, 0.18) 50%, transparent 70%);
+    animation: shimmer 3s linear infinite;
+    pointer-events: none;
+  }
+  @keyframes shimmer {
+    0%   { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+  .lb-rank {
+    font-family: 'Bungee', sans-serif;
+    font-size: 18px;
+    text-align: center;
+    color: var(--text-dim);
+  }
+  .lb-row.rank-1 .lb-rank {
+    color: var(--gold);
+    font-size: 22px;
+  }
+  .lb-name {
+    font-weight: 700;
+    font-size: 16px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .lb-crown { font-size: 18px; }
+  .lb-points {
+    font-family: 'Bungee', sans-serif;
+    font-size: 22px;
+    color: var(--red);
+    text-align: right;
+    line-height: 1;
+  }
+  .lb-row.rank-1 .lb-points { color: var(--gold); }
+  .lb-record {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-align: right;
+    line-height: 1.3;
+  }
+  .lb-record b {
+    color: var(--ok);
+    font-weight: 700;
+  }
+  .lb-record .losses { color: var(--text-muted); }
+
+  /* ============ Mode selector / segmented control ============ */
+  .segmented {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    background: var(--bg-1);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 4px;
+    gap: 4px;
+    margin-bottom: 16px;
+  }
+  .segmented button {
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    font-family: 'Bungee', sans-serif;
+    font-size: 14px;
+    padding: 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    letter-spacing: 0.06em;
+    transition: all 0.2s;
+  }
+  .segmented button.active {
+    background: linear-gradient(135deg, var(--red), var(--red-deep));
+    color: #fff;
+    box-shadow: 0 4px 12px -4px var(--red-glow);
+  }
+
+  /* ============ Team panels ============ */
+  .teams-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  @media (min-width: 480px) {
+    .teams-grid { grid-template-columns: 1fr 1fr; }
+  }
+  .team-panel {
+    background: var(--bg-1);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 16px;
+    position: relative;
+  }
+  .team-panel.team-A { border-top: 3px solid var(--red); }
+  .team-panel.team-B { border-top: 3px solid var(--gold); }
+  .team-panel-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .team-label {
+    font-family: 'Bungee', sans-serif;
+    font-size: 16px;
+    letter-spacing: 0.04em;
+  }
+  .team-A .team-label { color: var(--red); }
+  .team-B .team-label { color: var(--gold); }
+
+  .team-slots {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  /* ============ Winner picker ============ */
+  .winner-picker {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 16px 0;
+  }
+  .winner-btn {
+    background: var(--bg-1);
+    border: 2px solid var(--line);
+    color: var(--text-dim);
+    font-family: 'Bungee', sans-serif;
+    font-size: 14px;
+    padding: 18px 12px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.04em;
+    text-align: center;
+    line-height: 1.3;
+  }
+  .winner-btn .small { display: block; font-family: 'Sora', sans-serif; font-size: 10px; letter-spacing: 0.1em; opacity: 0.65; margin-bottom: 6px; }
+  .winner-btn.active { color: #fff; transform: translateY(-2px); }
+  .winner-btn[data-team="A"].active {
+    background: linear-gradient(135deg, var(--red), var(--red-deep));
+    border-color: var(--red);
+    box-shadow: 0 8px 22px -8px var(--red-glow);
+  }
+  .winner-btn[data-team="B"].active {
+    background: linear-gradient(135deg, var(--gold), var(--gold-deep));
+    border-color: var(--gold);
+    color: #1a0d00;
+    box-shadow: 0 8px 22px -8px rgba(255, 209, 102, 0.55);
+  }
+
+  /* ============ Player chips ============ */
+  .players-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .player-chip {
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    color: var(--text);
+    padding: 7px 12px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    animation: chip-in 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.4);
+  }
+  @keyframes chip-in {
+    from { opacity: 0; transform: scale(0.6); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+  .player-chip::before {
+    content: '🍺';
+    font-size: 11px;
+  }
+
+  /* ============ Games list (admin) ============ */
+  .games-list { display: flex; flex-direction: column; gap: 10px; }
+  .game-row {
+    background: var(--bg-1);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+  .game-info { flex: 1; min-width: 0; }
+  .game-meta {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+  }
+  .game-mode-badge {
+    background: var(--bg-elev);
+    color: var(--gold);
+    padding: 2px 7px;
+    border-radius: 5px;
+    font-family: 'Bungee', sans-serif;
+    font-size: 9px;
+    letter-spacing: 0.06em;
+    margin-right: 6px;
+  }
+  .game-teams {
+    font-size: 13px;
+    line-height: 1.4;
+    word-break: break-word;
+  }
+  .game-team.win { color: var(--ok); font-weight: 700; }
+  .game-team.win::after { content: ' 🏆'; }
+  .game-team.lose { color: var(--text-muted); }
+  .game-vs { color: var(--text-muted); margin: 0 6px; font-size: 11px; }
+
+  /* ============ Empty states ============ */
+  .empty-state {
+    text-align: center;
+    padding: 32px 16px;
+    color: var(--text-muted);
+  }
+  .empty-state-emoji {
+    font-size: 48px;
+    margin-bottom: 12px;
+    opacity: 0.5;
+  }
+  .empty-state-text { font-size: 14px; }
+
+  /* ============ Stat bar ============ */
+  .stat-bar {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .stat {
+    background: var(--bg-1);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 10px 12px;
+    text-align: center;
+  }
+  .stat-num {
+    font-family: 'Bungee', sans-serif;
+    font-size: 20px;
+    color: var(--red);
+    line-height: 1;
+  }
+  .stat-label {
+    font-size: 9px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-top: 4px;
+  }
+
+  /* ============ Bottom navigation ============ */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: calc(var(--nav-h) + var(--safe-bottom));
+    padding-bottom: var(--safe-bottom);
+    background: rgba(10, 9, 14, 0.92);
+    backdrop-filter: blur(18px) saturate(160%);
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    border-top: 1px solid var(--line);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    z-index: 50;
+  }
+  .nav-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-family: 'Sora', sans-serif;
+    font-weight: 600;
+    font-size: 10px;
+    padding: 10px 4px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    letter-spacing: 0.04em;
+    position: relative;
+    -webkit-tap-highlight-color: transparent;
+    transition: color 0.15s;
+  }
+  .nav-btn .nav-icon {
+    font-size: 22px;
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .nav-btn.active { color: var(--red); }
+  .nav-btn.active .nav-icon { transform: translateY(-3px) scale(1.1); }
+  .nav-btn.active::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 32px;
+    height: 3px;
+    background: var(--red);
+    border-radius: 0 0 4px 4px;
+    box-shadow: 0 0 10px var(--red-glow);
+  }
+
+  /* ============ Toast ============ */
+  .toast {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translate(-50%, -120%);
+    background: var(--bg-elev);
+    border: 1px solid var(--line-strong);
+    border-radius: 14px;
+    padding: 12px 18px;
+    color: var(--text);
+    font-weight: 600;
+    font-size: 14px;
+    z-index: 100;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    max-width: calc(100% - 40px);
+    box-shadow: 0 16px 40px -12px rgba(0,0,0,0.7);
+    text-align: center;
+  }
+  .toast.show { transform: translate(-50%, 0); }
+  .toast.success { border-color: var(--ok); background: linear-gradient(135deg, rgba(52, 211, 153, 0.18), var(--bg-elev)); }
+  .toast.error   { border-color: var(--err); background: linear-gradient(135deg, rgba(255, 107, 107, 0.2), var(--bg-elev)); }
+  .toast.info    { border-color: var(--gold); background: linear-gradient(135deg, rgba(255, 209, 102, 0.15), var(--bg-elev)); }
+
+  /* ============ Confetti canvas ============ */
+  #confetti {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 99;
+  }
+
+  /* ============ Modal ============ */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: 80;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: fade-in 0.2s ease;
+  }
+  .modal-backdrop.show { display: flex; }
+  @keyframes fade-in { from {opacity:0;} to {opacity:1;} }
+  .modal {
+    background: var(--bg-2);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    max-width: 420px;
+    width: 100%;
+    box-shadow: 0 30px 80px -20px rgba(0,0,0,0.9);
+    animation: pop-in 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes pop-in {
+    from { opacity: 0; transform: scale(0.85); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+  .modal-title {
+    font-family: 'Bungee', sans-serif;
+    font-size: 20px;
+    margin: 0 0 8px;
+    color: var(--err);
+    text-transform: uppercase;
+  }
+  .modal-text { color: var(--text-dim); margin-bottom: 16px; font-size: 14px; }
+  .modal-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 18px;
+  }
+
+  /* ============ Rules ============ */
+  .rule-block {
+    background: var(--bg-1);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    margin-bottom: 10px;
+  }
+  .rule-block h3 {
+    font-family: 'Bungee', sans-serif;
+    font-size: 14px;
+    margin: 0 0 8px;
+    letter-spacing: 0.04em;
+    color: var(--gold);
+    text-transform: uppercase;
+  }
+  .rule-block.house h3 { color: var(--red); }
+  .rule-block.house {
+    border-style: dashed;
+    border-color: rgba(255, 46, 77, 0.3);
+  }
+  .rule-block p {
+    margin: 0;
+    color: var(--text-dim);
+    font-size: 14px;
+    line-height: 1.55;
+  }
+  .rule-block.house .placeholder {
+    font-style: italic;
+    opacity: 0.6;
+  }
+
+  /* ============ Setup banner ============ */
+  .setup-banner {
+    background: linear-gradient(135deg, rgba(255, 46, 77, 0.18), rgba(124, 58, 237, 0.10));
+    border: 1px solid var(--red);
+    color: var(--text);
+    padding: 16px 18px;
+    border-radius: var(--radius);
+    margin: 12px 0;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .setup-banner b { color: var(--red); display: block; margin-bottom: 6px; font-family: 'Bungee', sans-serif; letter-spacing: 0.04em; }
+  .setup-banner code { background: var(--bg-0); color: var(--gold); padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+
+  /* ============ Helpers ============ */
+  .row { display: flex; align-items: center; gap: 10px; }
+  .row-between { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .mb-8 { margin-bottom: 8px; }
+  .mb-12 { margin-bottom: 12px; }
+  .mb-16 { margin-bottom: 16px; }
+  .mt-8 { margin-top: 8px; }
+  .mt-16 { margin-top: 16px; }
+  .mt-24 { margin-top: 24px; }
+  .small { font-size: 12px; color: var(--text-muted); }
+  .grow { flex: 1; }
+  .center { text-align: center; }
+
+  /* Sound mute everything would-be: there is no audio */
+</style>
+</head>
+<body>
+
+  <!-- Decorative background icons -->
+  <div class="deco d1" aria-hidden="true">🍺</div>
+  <div class="deco d2" aria-hidden="true">🏓</div>
+  <div class="deco d3" aria-hidden="true">🥤</div>
+  <div class="deco d4" aria-hidden="true">🍻</div>
+
+  <!-- Confetti canvas (overlay) -->
+  <canvas id="confetti" aria-hidden="true"></canvas>
+
+  <!-- Toast -->
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <div class="app">
+
+    <!-- ================= HEADER ================= -->
+    <header class="header">
+      <div class="header-row">
+        <div class="logo">
+          <div class="logo-mark" aria-hidden="true">🏓</div>
+          <div class="logo-text">
+            <div class="logo-title">Pascal's Beerpong Cup</div>
+            <div class="logo-sub" data-i18n="logo_sub">Live Tournament</div>
+          </div>
+        </div>
+        <div class="lang-toggle" role="tablist" aria-label="Language">
+          <button id="lang-en" class="active" type="button">EN</button>
+          <button id="lang-de" type="button">DE</button>
+        </div>
+      </div>
+    </header>
+
+    <main>
+
+      <!-- Setup banner: shown when Firebase is not configured -->
+      <div id="setup-banner" class="setup-banner" style="display:none;"></div>
+
+      <!-- ================= LEADERBOARD ================= -->
+      <section id="view-leaderboard" class="view active">
+        <div class="view-header">
+          <h1 class="view-title"><span class="accent" data-i18n="lb_title_a">Leader</span><span data-i18n="lb_title_b">board</span></h1>
+          <p class="view-sub" data-i18n="lb_sub">Live ranking. Win = +3, Loss = +1.</p>
+        </div>
+
+        <div id="lb-stats" class="stat-bar"></div>
+
+        <div class="lb-head">
+          <div data-i18n="col_rank">#</div>
+          <div data-i18n="col_player">Player</div>
+          <div class="col-mid" data-i18n="col_pts">Pts</div>
+          <div class="col-end" data-i18n="col_wl">W/L</div>
+        </div>
+        <div id="leaderboard" class="leaderboard"></div>
+
+        <button id="open-admin" class="btn btn-ghost btn-bouncy mt-24" type="button">
+          <span data-i18n="open_admin">⚙️ Admin / Delete Results</span>
+        </button>
+      </section>
+
+      <!-- ================= RECORD GAME ================= -->
+      <section id="view-record" class="view">
+        <div class="view-header">
+          <h1 class="view-title"><span class="accent" data-i18n="rec_title_a">Record</span><span data-i18n="rec_title_b"> Game</span></h1>
+          <p class="view-sub" data-i18n="rec_sub">Pick mode, teams, winner. Submit = points fly. 🍺</p>
+        </div>
+
+        <h3 class="card-title" data-i18n="rec_mode">Game mode</h3>
+        <div class="segmented" role="tablist" aria-label="Game mode">
+          <button id="mode-2v2" class="active" type="button">2v2</button>
+          <button id="mode-3v3" type="button">3v3</button>
+        </div>
+
+        <div class="teams-grid mb-16">
+          <div class="team-panel team-A">
+            <div class="team-panel-head">
+              <span class="team-label" data-i18n="team_a">Team A</span>
+              <span class="small">🔴</span>
+            </div>
+            <div id="team-A-slots" class="team-slots"></div>
+          </div>
+          <div class="team-panel team-B">
+            <div class="team-panel-head">
+              <span class="team-label" data-i18n="team_b">Team B</span>
+              <span class="small">🟡</span>
+            </div>
+            <div id="team-B-slots" class="team-slots"></div>
+          </div>
+        </div>
+
+        <h3 class="card-title" data-i18n="rec_winner">Who won?</h3>
+        <div class="winner-picker">
+          <button id="winner-A" class="winner-btn" data-team="A" type="button">
+            <span class="small" data-i18n="winner_label">Winner</span>
+            <span data-i18n="team_a">Team A</span>
+          </button>
+          <button id="winner-B" class="winner-btn" data-team="B" type="button">
+            <span class="small" data-i18n="winner_label">Winner</span>
+            <span data-i18n="team_b">Team B</span>
+          </button>
+        </div>
+
+        <button id="submit-game" class="btn btn-primary btn-bouncy" type="button" data-i18n="rec_submit">
+          🏆 Submit Result
+        </button>
+        <p id="record-hint" class="small center mt-8"></p>
+      </section>
+
+      <!-- ================= JOIN ================= -->
+      <section id="view-join" class="view">
+        <div class="view-header">
+          <h1 class="view-title"><span class="accent" data-i18n="join_title_a">Join</span><span data-i18n="join_title_b"> the Cup</span></h1>
+          <p class="view-sub" data-i18n="join_sub">Add your name and grab a cup. 1–20 characters.</p>
+        </div>
+
+        <div class="card">
+          <div class="input-row mb-12">
+            <input id="name-input" class="input" type="text" maxlength="20" autocomplete="off" autocapitalize="words" />
+            <button id="join-btn" class="btn btn-primary btn-bouncy" type="button" style="width:auto;flex-shrink:0;" data-i18n="join_btn">Join 🍺</button>
+          </div>
+          <div class="row-between">
+            <span class="small" id="player-count">0 / 100</span>
+            <span class="small" id="char-count">0/20</span>
+          </div>
+        </div>
+
+        <h3 class="card-title mt-24" data-i18n="join_who">Who's in</h3>
+        <div id="players-chips" class="players-list"></div>
+      </section>
+
+      <!-- ================= RULES ================= -->
+      <section id="view-rules" class="view">
+        <div class="view-header">
+          <h1 class="view-title"><span class="accent" data-i18n="rules_title_a">House</span><span data-i18n="rules_title_b"> Rules</span></h1>
+          <p class="view-sub" data-i18n="rules_sub">Standard rules + Pascal's house rules.</p>
+        </div>
+        <div id="rules-content"></div>
+      </section>
+
+      <!-- ================= ADMIN VIEW (sub-view of leaderboard) ================= -->
+      <section id="view-admin" class="view">
+        <div class="view-header">
+          <button id="back-to-lb" class="btn btn-ghost btn-sm btn-bouncy" type="button" style="width:auto; margin-bottom: 12px;" data-i18n="back">← Back</button>
+          <h1 class="view-title"><span class="accent" data-i18n="admin_title_a">Admin</span></h1>
+          <p class="view-sub" data-i18n="admin_sub">Delete a game result, or wipe all data.</p>
+        </div>
+
+        <h3 class="card-title" data-i18n="admin_games">Recorded games</h3>
+        <div id="games-list" class="games-list"></div>
+
+        <h3 class="card-title mt-24" data-i18n="admin_danger">Danger zone</h3>
+        <div class="card">
+          <p class="small mb-12" data-i18n="admin_reset_desc">Wipes ALL players and games. Use this between parties.</p>
+          <button id="reset-btn" class="btn btn-danger btn-bouncy" type="button" data-i18n="admin_reset">🧨 Reset all data</button>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- ================= BOTTOM NAV ================= -->
+    <nav class="bottom-nav" role="tablist" aria-label="Sections">
+      <button class="nav-btn active" data-view="leaderboard" type="button">
+        <span class="nav-icon">🏆</span>
+        <span data-i18n="nav_lb">Leaderboard</span>
+      </button>
+      <button class="nav-btn" data-view="record" type="button">
+        <span class="nav-icon">🏓</span>
+        <span data-i18n="nav_record">Record</span>
+      </button>
+      <button class="nav-btn" data-view="join" type="button">
+        <span class="nav-icon">👤</span>
+        <span data-i18n="nav_join">Join</span>
+      </button>
+      <button class="nav-btn" data-view="rules" type="button">
+        <span class="nav-icon">📖</span>
+        <span data-i18n="nav_rules">Rules</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- ================= RESET CONFIRM MODAL ================= -->
+  <div id="reset-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="reset-modal-title">
+    <div class="modal">
+      <h2 id="reset-modal-title" class="modal-title" data-i18n="reset_modal_title">⚠️ Reset everything?</h2>
+      <p class="modal-text" data-i18n="reset_modal_text">This deletes all players and all games. There is NO undo. Type <code>RESET</code> below to confirm.</p>
+      <input id="reset-confirm-input" class="input" type="text" autocomplete="off" placeholder="RESET" />
+      <div class="modal-actions">
+        <button id="reset-cancel" class="btn btn-ghost btn-bouncy" type="button" data-i18n="cancel">Cancel</button>
+        <button id="reset-confirm" class="btn btn-danger btn-bouncy" type="button" disabled data-i18n="reset_modal_confirm">Wipe it all</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================================================================
+       ⚙️  FIREBASE SETUP 
+       ===================================================================== -->
+
+  <script type="module">
+  /* =====================================================================
+   * Pascal's Party Beerpong Cup — application logic.
+   * See setup instructions in the comment block above this script.
+   * ===================================================================== */
+
+  import { initializeApp }
+    from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+  import { getDatabase, ref, push, set, update, remove, onValue }
+    from "https://www.gstatic.com/firebasejs/10.13.2/firebase-database.js";
+
+  /* =====================================================================
+   * 🔧  PASTE YOUR FIREBASE CONFIG HERE
+   * --------------------------------------------------------------------- */
+  const FIREBASE_CONFIG = {
+    apiKey: "AIzaSyBje0p7tvlamJq0irzc0UQr657a5hiw-oE",
+    authDomain: "party-db-c8003.firebaseapp.com",
+    databaseURL: "https://party-db-c8003-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "party-db-c8003",
+    storageBucket: "party-db-c8003.firebasestorage.app",
+    messagingSenderId: "646432479313",
+    appId: "1:646432479313:web:d7847aa304e82cfd130070"
+
+  };
+
+  /* =====================================================================*/
+
+  // ---------- App caps & limits ----------
+  const MAX_PLAYERS         = 100;
+  const MAX_GAMES           = 500;
+  const MAX_NAME_LEN        = 20;
+  const RATE_LIMIT_WINDOW_S = 60;     // seconds
+  const RATE_LIMIT_MAX      = 5;       // writes per window per device
+
+  // ===========================================================
+  // i18n strings
+  // ===========================================================
+  const STRINGS = {
+    en: {
+      logo_sub: 'Live Tournament',
+      // Leaderboard
+      lb_title_a: 'Leader', lb_title_b: 'board',
+      lb_title: 'Leaderboard',
+      lb_sub: 'Live ranking. Win = +3 pts. Loss = +1 pt.',
+      col_rank: '#', col_player: 'Player', col_pts: 'Pts', col_wl: 'W / L',
+      stat_players: 'Players', stat_games: 'Games', stat_top: 'Top score',
+      lb_empty: 'No players yet. Be the first to join!',
+      open_admin: '⚙️ Admin / Delete results',
+      // Record
+      rec_title_a: 'Record', rec_title_b: ' Game',
+      rec_sub: 'Pick mode, teams, winner. Submit = points fly. 🍺',
+      rec_mode: 'Game mode',
+      rec_winner: 'Who won?',
+      rec_submit: '🏆 Submit Result',
+      winner_label: 'Winner',
+      team_a: 'Team A', team_b: 'Team B',
+      slot_pick: '— pick player —',
+      err_need_players: 'Add players first in the Join tab.',
+      err_need_n_players: 'Need {n} players for {mode}. Currently {have}.',
+      err_fill_slots: 'Fill all team slots.',
+      err_dup_player: 'A player can only be on one team.',
+      err_no_winner: 'Pick the winner.',
+      err_rate: 'Whoa, slow down! Try again in a few seconds.',
+      err_game_cap: 'Game limit reached (500). Reset data to continue.',
+      ok_recorded: '🎉 Game recorded! Points awarded.',
+      // Join
+      join_title_a: 'Join', join_title_b: ' the Cup',
+      join_sub: 'Add your name and grab a cup. 1–20 characters.',
+      join_btn: 'Join 🍺',
+      join_who: "Who's in",
+      name_placeholder: 'Your name',
+      err_name_empty: 'Enter your name.',
+      err_name_long:  'Name must be 1–20 characters.',
+      err_name_dup:   'That name is already taken.',
+      err_player_cap: 'Player limit reached (100).',
+      ok_welcome:     'Welcome, {name}! 🍺',
+      no_players:     'No players yet. Be the first!',
+      // Rules
+      rules_title_a: 'House', rules_title_b: ' Rules',
+      rules_sub: 'Standard rules + Pascal\'s house rules.',
+      // Admin
+      admin_title_a: 'Admin',
+      admin_sub: 'Delete a game result, or wipe all data.',
+      admin_games: 'Recorded games',
+      admin_danger: 'Danger zone',
+      admin_reset_desc: 'Wipes ALL players and games. Use this between parties.',
+      admin_reset: '🧨 Reset all data',
+      no_games: 'No games recorded yet.',
+      delete: 'Delete',
+      ok_deleted: 'Game deleted, points reversed.',
+      ok_reset: 'All data wiped. Fresh party start! 🍺',
+      back: '← Back',
+      // Reset modal
+      reset_modal_title: '⚠️ Reset everything?',
+      reset_modal_text: 'This deletes all players and all games. There is NO undo. Type RESET below to confirm.',
+      reset_modal_confirm: 'Wipe it all',
+      cancel: 'Cancel',
+      // Bottom nav
+      nav_lb: 'Leaderboard', nav_record: 'Record', nav_join: 'Join', nav_rules: 'Rules',
+      // Setup banner
+      setup_title: '⚠️ Firebase not configured',
+      setup_text:  'Open this file and paste your firebaseConfig into FIREBASE_CONFIG. See the setup comment block in index.html.',
+      // Standard rules text
+      rules: [
+        { id: 'setup',    title: 'Setup',
+          body: '10 plastic cups arranged in a triangle on each end of the table. Cups filled (water for non-drinking play). Teams stand at opposite ends. 2v2 or 3v3.' },
+        { id: 'shoot',    title: 'How to shoot',
+          body: 'Players take turns. Each team gets one throw per player per turn. Shoot the ping-pong ball into the opposing team\'s cups. Elbow stays behind the table edge.' },
+        { id: 'scoring',  title: 'Scoring & elimination',
+          body: 'A ball that lands in a cup eliminates that cup. The opposing team drinks (or the cup is just removed in non-drinking play). First team to eliminate all opponent cups wins.' },
+        { id: 'rerack',   title: 'Re-racks',
+          body: 'Each team may call ONE re-rack per game when only certain cup counts remain (typically 6, 4, 3, 2, 1). Asked between turns.' },
+        { id: 'bounce',   title: 'Bounce shots',
+          body: 'A ball bounced off the table into a cup counts as TWO cups eliminated — but defenders may swat a bounced ball away mid-air.' },
+      ],
+      house: [
+        { title: 'House rule #1', body: 'Edit me' },
+        { title: 'House rule #2', body: 'Edit me' },
+        { title: 'House rule #3', body: 'Edit me' },
+      ],
+      house_label: 'House',
+    },
+    de: {
+      logo_sub: 'Live-Turnier',
+      lb_title_a: 'Rang', lb_title_b: 'liste',
+      lb_title: 'Rangliste',
+      lb_sub: 'Live-Ranking. Sieg = +3 Pkt. Niederlage = +1 Pkt.',
+      col_rank: '#', col_player: 'Spieler', col_pts: 'Pkt', col_wl: 'S / N',
+      stat_players: 'Spieler', stat_games: 'Spiele', stat_top: 'Top-Score',
+      lb_empty: 'Noch keine Spieler. Sei der Erste!',
+      open_admin: '⚙️ Admin / Ergebnisse löschen',
+      rec_title_a: 'Spiel', rec_title_b: ' eintragen',
+      rec_sub: 'Modus, Teams, Sieger wählen. Submit = Punkte fliegen. 🍺',
+      rec_mode: 'Spielmodus',
+      rec_winner: 'Wer hat gewonnen?',
+      rec_submit: '🏆 Ergebnis senden',
+      winner_label: 'Sieger',
+      team_a: 'Team A', team_b: 'Team B',
+      slot_pick: '— Spieler wählen —',
+      err_need_players: 'Erst Spieler hinzufügen (Tab „Mitspielen“).',
+      err_need_n_players: 'Brauche {n} Spieler für {mode}. Aktuell {have}.',
+      err_fill_slots: 'Alle Team-Plätze füllen.',
+      err_dup_player: 'Ein Spieler kann nur in einem Team sein.',
+      err_no_winner: 'Sieger auswählen.',
+      err_rate: 'Hoppla, nicht so schnell! In ein paar Sekunden erneut versuchen.',
+      err_game_cap: 'Spiel-Limit erreicht (500). Daten zurücksetzen, um weiterzumachen.',
+      ok_recorded: '🎉 Spiel eingetragen! Punkte vergeben.',
+      join_title_a: 'Mit', join_title_b: 'spielen',
+      join_sub: 'Namen eingeben und Becher schnappen. 1–20 Zeichen.',
+      join_btn: 'Mitmachen 🍺',
+      join_who: 'Wer ist dabei',
+      name_placeholder: 'Dein Name',
+      err_name_empty: 'Bitte Namen eingeben.',
+      err_name_long:  'Name muss 1–20 Zeichen lang sein.',
+      err_name_dup:   'Dieser Name ist schon vergeben.',
+      err_player_cap: 'Spieler-Limit erreicht (100).',
+      ok_welcome:     'Willkommen, {name}! 🍺',
+      no_players:     'Noch keine Spieler. Sei der Erste!',
+      rules_title_a: 'Spiel', rules_title_b: 'regeln',
+      rules_sub: 'Standardregeln + Pascals Hausregeln.',
+      admin_title_a: 'Admin',
+      admin_sub: 'Ergebnis löschen oder alle Daten zurücksetzen.',
+      admin_games: 'Eingetragene Spiele',
+      admin_danger: 'Gefahrenzone',
+      admin_reset_desc: 'Löscht ALLE Spieler und Spiele. Ideal zwischen Partys.',
+      admin_reset: '🧨 Alle Daten zurücksetzen',
+      no_games: 'Noch keine Spiele eingetragen.',
+      delete: 'Löschen',
+      ok_deleted: 'Spiel gelöscht, Punkte rückgängig gemacht.',
+      ok_reset: 'Alle Daten gelöscht. Frischer Party-Start! 🍺',
+      back: '← Zurück',
+      reset_modal_title: '⚠️ Alles zurücksetzen?',
+      reset_modal_text: 'Dies löscht alle Spieler und alle Spiele. Es gibt KEIN Zurück. Tippe RESET zur Bestätigung.',
+      reset_modal_confirm: 'Alles löschen',
+      cancel: 'Abbrechen',
+      nav_lb: 'Rangliste', nav_record: 'Eintragen', nav_join: 'Mitspielen', nav_rules: 'Regeln',
+      setup_title: '⚠️ Firebase nicht konfiguriert',
+      setup_text:  'Öffne diese Datei und füge deine firebaseConfig in FIREBASE_CONFIG ein. Siehe Setup-Kommentar oben in der index.html.',
+      rules: [
+        { id: 'setup',    title: 'Aufbau',
+          body: '10 Plastikbecher in Dreieck-Form an jedem Tischende. Becher gefüllt (Wasser bei alkoholfreier Variante). Teams stehen sich gegenüber. 2v2 oder 3v3.' },
+        { id: 'shoot',    title: 'So wird geworfen',
+          body: 'Teams wechseln sich ab. Jedes Team-Mitglied wirft einmal pro Runde. Ziel: Tischtennisball in einen gegnerischen Becher werfen. Ellbogen bleibt hinter der Tischkante.' },
+        { id: 'scoring',  title: 'Punkte & Ausscheiden',
+          body: 'Ein Ball im Becher = Becher raus. Das gegnerische Team trinkt (oder Becher wird einfach entfernt). Erstes Team ohne Becher verliert.' },
+        { id: 'rerack',   title: 'Re-Racks',
+          body: 'Jedes Team darf EIN Re-Rack pro Spiel ansagen, wenn bestimmte Becherzahlen übrig sind (typisch 6, 4, 3, 2, 1). Zwischen den Würfen ansagen.' },
+        { id: 'bounce',   title: 'Bounce-Shots',
+          body: 'Ein Ball, der vom Tisch in einen Becher abprallt, zählt als ZWEI Becher — aber Verteidiger dürfen den abgeprallten Ball aus der Luft wegschlagen.' },
+      ],
+      house: [
+        { title: 'Hausregel #1', body: 'Edit me' },
+        { title: 'Hausregel #2', body: 'Edit me' },
+        { title: 'Hausregel #3', body: 'Edit me' },
+      ],
+      house_label: 'Haus',
+    }
+  };
+
+  // ===========================================================
+  // App state
+  // ===========================================================
+  const state = {
+    lang: localStorage.getItem('bp_lang') || 'en',
+    players: {},          // { id: {name, points, wins, losses, gamesPlayed, createdAt} }
+    games: {},            // { id: {mode, teamA[], teamB[], winner, recordedAt} }
+    mode: '2v2',
+    winner: null,         // 'A' | 'B'
+    teamA: [],            // arrays of selected playerIds (or null)
+    teamB: [],
+    currentView: 'leaderboard',
+    fbReady: false,
+  };
+
+  // ===========================================================
+  // Helpers
+  // ===========================================================
+  const $  = sel => document.querySelector(sel);
+  const $$ = sel => document.querySelectorAll(sel);
+  const t  = (key, params) => {
+    const dict = STRINGS[state.lang] || STRINGS.en;
+    let s = dict[key] ?? STRINGS.en[key] ?? key;
+    if (params) for (const k in params) s = s.replaceAll('{' + k + '}', params[k]);
+    return s;
+  };
+  const sanitize = (s) => String(s ?? '').replace(/\s+/g, ' ').trim();
+  const escapeForId = (s) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+  function toast(msg, kind = 'success', ms = 2400) {
+    const el = $('#toast');
+    el.textContent = msg;
+    el.className = 'toast ' + kind + ' show';
+    clearTimeout(toast._t);
+    toast._t = setTimeout(() => el.classList.remove('show'), ms);
+  }
+
+  // ===========================================================
+  // Rate limiter (per device, via localStorage)
+  // ===========================================================
+  function rateLimitOK() {
+    const now   = Date.now();
+    const winMs = RATE_LIMIT_WINDOW_S * 1000;
+    let stamps;
+    try { stamps = JSON.parse(localStorage.getItem('bp_rate') || '[]'); }
+    catch { stamps = []; }
+    stamps = stamps.filter(t => now - t < winMs);
+    if (stamps.length >= RATE_LIMIT_MAX) {
+      localStorage.setItem('bp_rate', JSON.stringify(stamps));
+      return false;
+    }
+    stamps.push(now);
+    localStorage.setItem('bp_rate', JSON.stringify(stamps));
+    return true;
+  }
+
+  // ===========================================================
+  // Confetti — small canvas-based burst, dependency free
+  // ===========================================================
+  const confetti = (() => {
+    const cv  = $('#confetti');
+    const ctx = cv.getContext('2d');
+    let parts = [];
+    let raf;
+    const COLORS = ['#ff2e4d','#ffd166','#fff4d6','#ff5fa2','#7c3aed','#34d399'];
+
+    function resize() {
+      cv.width  = window.innerWidth  * devicePixelRatio;
+      cv.height = window.innerHeight * devicePixelRatio;
+      cv.style.width  = window.innerWidth + 'px';
+      cv.style.height = window.innerHeight + 'px';
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    function spawn(n) {
+      const dpr = devicePixelRatio;
+      const cx = cv.width / 2, cy = cv.height * 0.30;
+      for (let i = 0; i < n; i++) {
+        parts.push({
+          x: cx + (Math.random() - 0.5) * 100 * dpr,
+          y: cy + (Math.random() - 0.5) * 40  * dpr,
+          vx: (Math.random() - 0.5) * 14 * dpr,
+          vy: (Math.random() * -12 - 6)  * dpr,
+          g:  0.35 * dpr,
+          size:  (Math.random() * 6 + 4) * dpr,
+          color: COLORS[(Math.random() * COLORS.length) | 0],
+          rot: Math.random() * Math.PI * 2,
+          vr:  (Math.random() - 0.5) * 0.4,
+          life: 0,
+          maxLife: 120 + Math.random() * 80,
+          shape: Math.random() < 0.5 ? 'rect' : 'circle',
+        });
+      }
+    }
+
+    function tick() {
+      ctx.clearRect(0, 0, cv.width, cv.height);
+      parts.forEach(p => {
+        p.vy += p.g;
+        p.x  += p.vx;
+        p.y  += p.vy;
+        p.vx *= 0.99;
+        p.rot += p.vr;
+        p.life++;
+        const alpha = Math.max(0, 1 - p.life / p.maxLife);
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rot);
+        ctx.fillStyle = p.color;
+        if (p.shape === 'rect') {
+          ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6);
+        } else {
+          ctx.beginPath();
+          ctx.arc(0, 0, p.size / 2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+      });
+      parts = parts.filter(p => p.life < p.maxLife && p.y < cv.height + 40);
+      if (parts.length) {
+        raf = requestAnimationFrame(tick);
+      } else {
+        cancelAnimationFrame(raf);
+        ctx.clearRect(0, 0, cv.width, cv.height);
+      }
+    }
+
+    return {
+      fire(count = 140) {
+        spawn(count);
+        if (!raf || parts.length === 1) {
+          cancelAnimationFrame(raf);
+          raf = requestAnimationFrame(tick);
+        }
+      }
+    };
+  })();
+
+  // ===========================================================
+  // Language system
+  // ===========================================================
+  function setLanguage(lang) {
+    state.lang = lang;
+    localStorage.setItem('bp_lang', lang);
+    document.documentElement.lang = lang;
+    $('#lang-en').classList.toggle('active', lang === 'en');
+    $('#lang-de').classList.toggle('active', lang === 'de');
+
+    // All static elements with data-i18n
+    $$('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      el.textContent = t(key);
+    });
+
+    // Specifically rebuild dynamic parts
+    $('#name-input').placeholder = t('name_placeholder');
+    $('#reset-confirm-input').placeholder = 'RESET';
+
+    renderRules();
+    renderLeaderboard();
+    renderPlayersChips();
+    renderGames();
+    rebuildTeamSlots();
+    updateRecordHint();
+    updatePlayerCount();
+  }
+
+  $('#lang-en').addEventListener('click', () => setLanguage('en'));
+  $('#lang-de').addEventListener('click', () => setLanguage('de'));
+
+  // ===========================================================
+  // Section navigation
+  // ===========================================================
+  function showView(name) {
+    state.currentView = name;
+    $$('.view').forEach(v => v.classList.remove('active'));
+    const target = $('#view-' + name);
+    if (target) target.classList.add('active');
+
+    // Bottom-nav state — admin maps back to leaderboard tab
+    const navTab = (name === 'admin') ? 'leaderboard' : name;
+    $$('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.view === navTab));
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  $$('.nav-btn').forEach(btn => {
+    btn.addEventListener('click', () => showView(btn.dataset.view));
+  });
+  $('#open-admin').addEventListener('click', () => showView('admin'));
+  $('#back-to-lb').addEventListener('click', () => showView('leaderboard'));
+
+  // ===========================================================
+  // Render: Leaderboard
+  // ===========================================================
+  function renderLeaderboard() {
+    const root = $('#leaderboard');
+    const players = Object.entries(state.players).map(([id, p]) => ({ id, ...p }));
+    players.sort((a, b) => b.points - a.points || a.name.localeCompare(b.name));
+
+    // Stats
+    const games  = Object.keys(state.games).length;
+    const top    = players[0]?.points ?? 0;
+    const stats  = $('#lb-stats');
+    stats.innerHTML = '';
+    [
+      { num: players.length, label: t('stat_players') },
+      { num: games,          label: t('stat_games')   },
+      { num: top,            label: t('stat_top')     },
+    ].forEach(s => {
+      const el = document.createElement('div');
+      el.className = 'stat';
+      const n = document.createElement('div'); n.className = 'stat-num';   n.textContent = s.num;
+      const l = document.createElement('div'); l.className = 'stat-label'; l.textContent = s.label;
+      el.appendChild(n); el.appendChild(l);
+      stats.appendChild(el);
+    });
+
+    root.innerHTML = '';
+    if (!players.length) {
+      const empty = document.createElement('div');
+      empty.className = 'empty-state';
+      const e = document.createElement('div'); e.className = 'empty-state-emoji'; e.textContent = '🍺';
+      const txt = document.createElement('div'); txt.className = 'empty-state-text'; txt.textContent = t('lb_empty');
+      empty.appendChild(e); empty.appendChild(txt);
+      root.appendChild(empty);
+      return;
+    }
+
+    // Competition ranking (1, 1, 3, 4, ...)
+    let lastPts = null, lastRank = 0;
+    players.forEach((p, idx) => {
+      const rank = (p.points === lastPts) ? lastRank : (idx + 1);
+      lastPts = p.points; lastRank = rank;
+
+      const row = document.createElement('div');
+      row.className = 'lb-row' + (rank === 1 ? ' rank-1' : '');
+
+      const r = document.createElement('div'); r.className = 'lb-rank';
+      r.textContent = rank;
+      const n = document.createElement('div'); n.className = 'lb-name';
+      if (rank === 1) {
+        const c = document.createElement('span'); c.className = 'lb-crown'; c.textContent = '🏆';
+        n.appendChild(c);
+      }
+      const nameSpan = document.createElement('span');
+      nameSpan.textContent = p.name; // textContent prevents XSS
+      n.appendChild(nameSpan);
+
+      const pts = document.createElement('div'); pts.className = 'lb-points';
+      pts.textContent = p.points;
+
+      const rec = document.createElement('div'); rec.className = 'lb-record';
+      const wins   = p.wins   ?? 0;
+      const losses = p.losses ?? 0;
+      const games  = p.gamesPlayed ?? (wins + losses);
+      rec.innerHTML = '';
+      const wEl = document.createElement('b'); wEl.textContent = wins;
+      const sep = document.createTextNode(' / ');
+      const lEl = document.createElement('span'); lEl.className = 'losses'; lEl.textContent = losses;
+      const gEl = document.createElement('div'); gEl.className = 'small'; gEl.textContent = games + ' 🎯';
+      rec.appendChild(wEl); rec.appendChild(sep); rec.appendChild(lEl);
+      rec.appendChild(gEl);
+
+      row.appendChild(r); row.appendChild(n); row.appendChild(pts); row.appendChild(rec);
+      root.appendChild(row);
+    });
+  }
+
+  // ===========================================================
+  // Render: Players chips (Join section)
+  // ===========================================================
+  function renderPlayersChips() {
+    const root = $('#players-chips');
+    root.innerHTML = '';
+    const players = Object.values(state.players)
+      .sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+    if (!players.length) {
+      const empty = document.createElement('div');
+      empty.className = 'small';
+      empty.textContent = t('no_players');
+      root.appendChild(empty);
+      return;
+    }
+    players.forEach(p => {
+      const chip = document.createElement('span');
+      chip.className = 'player-chip';
+      chip.textContent = p.name; // safe
+      root.appendChild(chip);
+    });
+  }
+  function updatePlayerCount() {
+    const n = Object.keys(state.players).length;
+    $('#player-count').textContent = n + ' / ' + MAX_PLAYERS;
+    $('#join-btn').disabled  = n >= MAX_PLAYERS;
+    $('#name-input').disabled = n >= MAX_PLAYERS;
+  }
+
+  // ===========================================================
+  // Render: Rules
+  // ===========================================================
+  function renderRules() {
+    const root  = $('#rules-content');
+    root.innerHTML = '';
+    const dict  = STRINGS[state.lang] || STRINGS.en;
+    dict.rules.forEach(r => {
+      const block = document.createElement('div');
+      block.className = 'rule-block';
+      const h = document.createElement('h3'); h.textContent = r.title;
+      const p = document.createElement('p');  p.textContent = r.body;
+      block.appendChild(h); block.appendChild(p);
+      root.appendChild(block);
+    });
+    dict.house.forEach(r => {
+      const block = document.createElement('div');
+      block.className = 'rule-block house';
+      const h = document.createElement('h3');
+      h.textContent = '🍻 ' + r.title;
+      const p = document.createElement('p');
+      p.className = 'placeholder';
+      p.textContent = r.body;
+      block.appendChild(h); block.appendChild(p);
+      root.appendChild(block);
+    });
+  }
+
+  // ===========================================================
+  // Record Game — segmented mode + dynamic team slots
+  // ===========================================================
+  function setMode(mode) {
+    state.mode = mode;
+    $('#mode-2v2').classList.toggle('active', mode === '2v2');
+    $('#mode-3v3').classList.toggle('active', mode === '3v3');
+    const slots = mode === '2v2' ? 2 : 3;
+    state.teamA = Array(slots).fill(null);
+    state.teamB = Array(slots).fill(null);
+    rebuildTeamSlots();
+    updateRecordHint();
+  }
+  $('#mode-2v2').addEventListener('click', () => setMode('2v2'));
+  $('#mode-3v3').addEventListener('click', () => setMode('3v3'));
+
+  function rebuildTeamSlots() {
+    ['A','B'].forEach(team => {
+      const root = $('#team-' + team + '-slots');
+      root.innerHTML = '';
+      const arr = team === 'A' ? state.teamA : state.teamB;
+      arr.forEach((selectedId, idx) => {
+        const sel = document.createElement('select');
+        sel.className = 'select';
+        // placeholder
+        const opt0 = document.createElement('option');
+        opt0.value = '';
+        opt0.textContent = t('slot_pick');
+        sel.appendChild(opt0);
+
+        // all players, alphabetically, except those picked elsewhere (allow current selection)
+        const taken = new Set([...state.teamA, ...state.teamB].filter(x => x && x !== selectedId));
+        const players = Object.entries(state.players)
+          .map(([id, p]) => ({ id, name: p.name }))
+          .sort((a, b) => a.name.localeCompare(b.name));
+        players.forEach(p => {
+          if (taken.has(p.id)) return;
+          const opt = document.createElement('option');
+          opt.value = p.id;
+          opt.textContent = p.name; // safe
+          if (p.id === selectedId) opt.selected = true;
+          sel.appendChild(opt);
+        });
+
+        sel.addEventListener('change', () => {
+          const arrRef = team === 'A' ? state.teamA : state.teamB;
+          arrRef[idx] = sel.value || null;
+          rebuildTeamSlots();
+          updateRecordHint();
+        });
+
+        root.appendChild(sel);
+      });
+    });
+  }
+
+  function setWinner(team) {
+    state.winner = team;
+    $('#winner-A').classList.toggle('active', team === 'A');
+    $('#winner-B').classList.toggle('active', team === 'B');
+    updateRecordHint();
+  }
+  $('#winner-A').addEventListener('click', () => setWinner('A'));
+  $('#winner-B').addEventListener('click', () => setWinner('B'));
+
+  function updateRecordHint() {
+    const hint = $('#record-hint');
+    const players = Object.keys(state.players).length;
+    const need    = state.mode === '2v2' ? 4 : 6;
+    if (players < 2)               { hint.textContent = t('err_need_players'); return; }
+    if (players < need)            { hint.textContent = t('err_need_n_players', { n: need, mode: state.mode, have: players }); return; }
+    const slotsFilled = [...state.teamA, ...state.teamB].every(x => !!x);
+    if (!slotsFilled)              { hint.textContent = t('err_fill_slots'); return; }
+    if (!state.winner)             { hint.textContent = t('err_no_winner'); return; }
+    hint.textContent = '';
+  }
+
+  // ===========================================================
+  // Submit Game
+  // ===========================================================
+  $('#submit-game').addEventListener('click', async () => {
+    if (!state.fbReady) return toast(t('setup_title'), 'error');
+
+    // Validation
+    const all = [...state.teamA, ...state.teamB];
+    if (all.some(x => !x))            return toast(t('err_fill_slots'), 'error');
+    if (new Set(all).size !== all.length) return toast(t('err_dup_player'), 'error');
+    if (!state.winner)                return toast(t('err_no_winner'), 'error');
+    if (Object.keys(state.games).length >= MAX_GAMES) return toast(t('err_game_cap'), 'error');
+    if (!rateLimitOK())               return toast(t('err_rate'), 'error');
+
+    // Build atomic multi-path update
+    const winners = state.winner === 'A' ? state.teamA : state.teamB;
+    const losers  = state.winner === 'A' ? state.teamB : state.teamA;
+    const updates = {};
+
+    // New game record
+    const newGameRef = push(ref(db, 'games'));
+    const gameId = newGameRef.key;
+    updates['games/' + gameId] = {
+      mode: state.mode,
+      teamA: [...state.teamA],
+      teamB: [...state.teamB],
+      winner: state.winner,
+      recordedAt: Date.now()
+    };
+
+    // Player stat updates
+    winners.forEach(pid => {
+      const p = state.players[pid] || { points:0, wins:0, losses:0, gamesPlayed:0 };
+      updates['players/' + pid + '/points']      = (p.points      || 0) + 3;
+      updates['players/' + pid + '/wins']        = (p.wins        || 0) + 1;
+      updates['players/' + pid + '/gamesPlayed'] = (p.gamesPlayed || 0) + 1;
+    });
+    losers.forEach(pid => {
+      const p = state.players[pid] || { points:0, wins:0, losses:0, gamesPlayed:0 };
+      updates['players/' + pid + '/points']      = (p.points      || 0) + 1;
+      updates['players/' + pid + '/losses']      = (p.losses      || 0) + 1;
+      updates['players/' + pid + '/gamesPlayed'] = (p.gamesPlayed || 0) + 1;
+    });
+
+    try {
+      await update(ref(db), updates);
+      toast(t('ok_recorded'), 'success');
+      confetti.fire(170);
+      // Reset form
+      setMode(state.mode); // resets slots
+      setWinner(null);
+      $('#winner-A').classList.remove('active');
+      $('#winner-B').classList.remove('active');
+      state.winner = null;
+      updateRecordHint();
+    } catch (err) {
+      console.error(err);
+      toast('Firebase error: ' + (err.message || err), 'error', 4000);
+    }
+  });
+
+  // ===========================================================
+  // Join / Register
+  // ===========================================================
+  $('#name-input').addEventListener('input', () => {
+    const v = $('#name-input').value;
+    $('#char-count').textContent = v.length + '/' + MAX_NAME_LEN;
+  });
+  $('#name-input').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); $('#join-btn').click(); }
+  });
+
+  $('#join-btn').addEventListener('click', async () => {
+    if (!state.fbReady) return toast(t('setup_title'), 'error');
+
+    const raw  = $('#name-input').value;
+    const name = sanitize(raw);
+
+    if (!name)                   return toast(t('err_name_empty'), 'error');
+    if (name.length > MAX_NAME_LEN) return toast(t('err_name_long'), 'error');
+    const lower = name.toLowerCase();
+    const isDup = Object.values(state.players).some(p => (p.name || '').toLowerCase() === lower);
+    if (isDup)                   return toast(t('err_name_dup'), 'error');
+    if (Object.keys(state.players).length >= MAX_PLAYERS) return toast(t('err_player_cap'), 'error');
+    if (!rateLimitOK())          return toast(t('err_rate'), 'error');
+
+    try {
+      const newRef = push(ref(db, 'players'));
+      await set(newRef, {
+        name,
+        points: 0,
+        wins: 0,
+        losses: 0,
+        gamesPlayed: 0,
+        createdAt: Date.now()
+      });
+      $('#name-input').value = '';
+      $('#char-count').textContent = '0/' + MAX_NAME_LEN;
+      toast(t('ok_welcome', { name }), 'success');
+      confetti.fire(70);
+    } catch (err) {
+      console.error(err);
+      toast('Firebase error: ' + (err.message || err), 'error', 4000);
+    }
+  });
+
+  // ===========================================================
+  // Render: Games (admin) + delete
+  // ===========================================================
+  function renderGames() {
+    const root = $('#games-list');
+    root.innerHTML = '';
+    const games = Object.entries(state.games)
+      .map(([id, g]) => ({ id, ...g }))
+      .sort((a, b) => (b.recordedAt || 0) - (a.recordedAt || 0));
+
+    if (!games.length) {
+      const e = document.createElement('div');
+      e.className = 'empty-state';
+      const ee = document.createElement('div'); ee.className = 'empty-state-emoji'; ee.textContent = '🏓';
+      const ed = document.createElement('div'); ed.className = 'empty-state-text';   ed.textContent = t('no_games');
+      e.appendChild(ee); e.appendChild(ed);
+      root.appendChild(e);
+      return;
+    }
+
+    games.forEach(g => {
+      const row = document.createElement('div'); row.className = 'game-row';
+      const info = document.createElement('div'); info.className = 'game-info';
+      const meta = document.createElement('div'); meta.className = 'game-meta';
+      const date = g.recordedAt ? new Date(g.recordedAt).toLocaleString(state.lang === 'de' ? 'de-DE' : 'en-GB',
+        { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+      const modeBadge = document.createElement('span'); modeBadge.className = 'game-mode-badge'; modeBadge.textContent = g.mode || '';
+      meta.appendChild(modeBadge);
+      meta.appendChild(document.createTextNode(date));
+      info.appendChild(meta);
+
+      const teams = document.createElement('div'); teams.className = 'game-teams';
+      const aSpan = document.createElement('span');
+      aSpan.className = 'game-team ' + (g.winner === 'A' ? 'win' : 'lose');
+      aSpan.textContent = (g.teamA || []).map(id => state.players[id]?.name || '?').join(' & ');
+      const vs = document.createElement('span'); vs.className = 'game-vs'; vs.textContent = 'vs';
+      const bSpan = document.createElement('span');
+      bSpan.className = 'game-team ' + (g.winner === 'B' ? 'win' : 'lose');
+      bSpan.textContent = (g.teamB || []).map(id => state.players[id]?.name || '?').join(' & ');
+      teams.appendChild(aSpan); teams.appendChild(vs); teams.appendChild(bSpan);
+      info.appendChild(teams);
+
+      const del = document.createElement('button');
+      del.className = 'btn btn-icon btn-danger btn-bouncy';
+      del.type = 'button';
+      del.title = t('delete');
+      del.setAttribute('aria-label', t('delete'));
+      del.textContent = '🗑️';
+      del.addEventListener('click', () => deleteGame(g));
+
+      row.appendChild(info); row.appendChild(del);
+      root.appendChild(row);
+    });
+  }
+
+  async function deleteGame(g) {
+    if (!state.fbReady) return toast(t('setup_title'), 'error');
+    if (!rateLimitOK()) return toast(t('err_rate'), 'error');
+
+    const winners = g.winner === 'A' ? (g.teamA || []) : (g.teamB || []);
+    const losers  = g.winner === 'A' ? (g.teamB || []) : (g.teamA || []);
+    const updates = {};
+    updates['games/' + g.id] = null; // delete
+
+    winners.forEach(pid => {
+      if (!state.players[pid]) return; // safety
+      const p = state.players[pid];
+      updates['players/' + pid + '/points']      = Math.max(0, (p.points      || 0) - 3);
+      updates['players/' + pid + '/wins']        = Math.max(0, (p.wins        || 0) - 1);
+      updates['players/' + pid + '/gamesPlayed'] = Math.max(0, (p.gamesPlayed || 0) - 1);
+    });
+    losers.forEach(pid => {
+      if (!state.players[pid]) return;
+      const p = state.players[pid];
+      updates['players/' + pid + '/points']      = Math.max(0, (p.points      || 0) - 1);
+      updates['players/' + pid + '/losses']      = Math.max(0, (p.losses      || 0) - 1);
+      updates['players/' + pid + '/gamesPlayed'] = Math.max(0, (p.gamesPlayed || 0) - 1);
+    });
+
+    try {
+      await update(ref(db), updates);
+      toast(t('ok_deleted'), 'success');
+    } catch (err) {
+      console.error(err);
+      toast('Firebase error: ' + (err.message || err), 'error', 4000);
+    }
+  }
+
+  // ===========================================================
+  // Reset all data — double confirmation modal
+  // ===========================================================
+  const resetModal      = $('#reset-modal');
+  const resetInput      = $('#reset-confirm-input');
+  const resetConfirmBtn = $('#reset-confirm');
+
+  function openResetModal() {
+    resetInput.value = '';
+    resetConfirmBtn.disabled = true;
+    resetModal.classList.add('show');
+    setTimeout(() => resetInput.focus(), 100);
+  }
+  function closeResetModal() {
+    resetModal.classList.remove('show');
+  }
+  $('#reset-btn').addEventListener('click', () => {
+    if (!confirm(t('reset_modal_title') + '\n\n' + t('reset_modal_text').replace('RESET', '"RESET"'))) return;
+    openResetModal();
+  });
+  $('#reset-cancel').addEventListener('click', closeResetModal);
+  resetModal.addEventListener('click', (e) => { if (e.target === resetModal) closeResetModal(); });
+  resetInput.addEventListener('input', () => {
+    resetConfirmBtn.disabled = resetInput.value.trim().toUpperCase() !== 'RESET';
+  });
+  resetConfirmBtn.addEventListener('click', async () => {
+    if (resetInput.value.trim().toUpperCase() !== 'RESET') return;
+    if (!state.fbReady) return toast(t('setup_title'), 'error');
+    try {
+      await Promise.all([
+        remove(ref(db, 'players')),
+        remove(ref(db, 'games')),
+      ]);
+      closeResetModal();
+      toast(t('ok_reset'), 'success', 3000);
+      confetti.fire(220);
+    } catch (err) {
+      console.error(err);
+      toast('Firebase error: ' + (err.message || err), 'error', 4000);
+    }
+  });
+
+  // ===========================================================
+  // Firebase init + listeners
+  // ===========================================================
+  let db;
+  function initFirebase() {
+    const cfgOK = FIREBASE_CONFIG &&
+                  FIREBASE_CONFIG.apiKey &&
+                  !FIREBASE_CONFIG.apiKey.startsWith('PASTE_') &&
+                  FIREBASE_CONFIG.databaseURL &&
+                  !FIREBASE_CONFIG.databaseURL.includes('your-project');
+    if (!cfgOK) {
+      const banner = $('#setup-banner');
+      banner.style.display = 'block';
+      banner.innerHTML = '';
+      const b = document.createElement('b'); b.textContent = t('setup_title');
+      const p = document.createElement('div'); p.textContent = t('setup_text');
+      banner.appendChild(b); banner.appendChild(p);
+      state.fbReady = false;
+      return;
+    }
+    try {
+      const app = initializeApp(FIREBASE_CONFIG);
+      db = getDatabase(app);
+      state.fbReady = true;
+
+      onValue(ref(db, 'players'), snap => {
+        state.players = snap.val() || {};
+        renderLeaderboard();
+        renderPlayersChips();
+        updatePlayerCount();
+        renderGames();
+        rebuildTeamSlots();
+        updateRecordHint();
+      });
+      onValue(ref(db, 'games'), snap => {
+        state.games = snap.val() || {};
+        renderGames();
+        renderLeaderboard(); // for stats
+      });
+    } catch (err) {
+      console.error('Firebase init failed', err);
+      const banner = $('#setup-banner');
+      banner.style.display = 'block';
+      banner.textContent = 'Firebase init failed: ' + (err.message || err);
+      state.fbReady = false;
+    }
+  }
+
+  // ===========================================================
+  // Boot
+  // ===========================================================
+  setLanguage(state.lang);
+  setMode('2v2');
+  setWinner(null);
+  updateRecordHint();
+  initFirebase();
+
+  // Tiny welcome confetti on first ever visit
+  if (!localStorage.getItem('bp_visited')) {
+    localStorage.setItem('bp_visited', '1');
+    setTimeout(() => confetti.fire(60), 600);
+  }
+  </script>
+
+</body>
+</html>
