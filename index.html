@@ -805,36 +805,136 @@
     margin-top: 18px;
   }
 
-  /* ============ Rules ============ */
-  .rule-block {
-    background: var(--bg-1);
+  /* old rule-block styles replaced above */
+
+  /* ============ Collapsible rule categories ============ */
+  .rule-category {
+    background: linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 100%);
     border: 1px solid var(--line);
     border-radius: var(--radius);
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  .rule-category-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     padding: 16px 18px;
-    margin-bottom: 10px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    gap: 12px;
+    transition: background 0.2s;
+  }
+  .rule-category-header:active {
+    background: rgba(255,255,255,0.04);
+  }
+  .rule-category-header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+  }
+  .rule-category-emoji {
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  .rule-category-title {
+    font-family: 'Bungee', sans-serif;
+    font-size: 14px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+  .rule-category-count {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 500;
+    margin-top: 2px;
+  }
+  .rule-chevron {
+    color: var(--text-muted);
+    font-size: 13px;
+    flex-shrink: 0;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .rule-category.open .rule-chevron {
+    transform: rotate(180deg);
+  }
+  .rule-category-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .rule-category.open .rule-category-body {
+    max-height: 9999px;
+  }
+  .rule-category-inner {
+    padding: 0 12px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .rule-block {
+    background: var(--bg-0);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
   }
   .rule-block h3 {
     font-family: 'Bungee', sans-serif;
-    font-size: 14px;
-    margin: 0 0 8px;
-    letter-spacing: 0.04em;
+    font-size: 12px;
+    margin: 0 0 6px;
+    letter-spacing: 0.06em;
     color: var(--gold);
     text-transform: uppercase;
   }
-  .rule-block.house h3 { color: var(--red); }
-  .rule-block.house {
-    border-style: dashed;
-    border-color: rgba(255, 46, 77, 0.3);
-  }
+  .rule-block.special h3 { color: var(--warn); }
+  .rule-block.advanced h3 { color: var(--pink); }
   .rule-block p {
     margin: 0;
     color: var(--text-dim);
-    font-size: 14px;
-    line-height: 1.55;
+    font-size: 13px;
+    line-height: 1.6;
   }
-  .rule-block.house .placeholder {
+  .rule-block .rule-note {
+    margin-top: 8px;
+    padding: 8px 10px;
+    background: rgba(255,255,255,0.04);
+    border-left: 2px solid var(--red);
+    border-radius: 0 6px 6px 0;
+    color: var(--text-muted);
+    font-size: 12px;
+    line-height: 1.5;
     font-style: italic;
-    opacity: 0.6;
+  }
+  .rule-block .rule-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 8px;
+    font-size: 12px;
+  }
+  .rule-block .rule-table th {
+    color: var(--text-muted);
+    text-align: left;
+    padding: 4px 8px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    font-size: 10px;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--line);
+  }
+  .rule-block .rule-table td {
+    padding: 5px 8px;
+    color: var(--text-dim);
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    vertical-align: top;
+  }
+  .rule-block .rule-table td:last-child { color: var(--text); }
+  .rule-category-divider {
+    height: 1px;
+    background: var(--line);
+    margin: 0 12px;
   }
 
   /* ============ Setup banner ============ */
@@ -1096,7 +1196,7 @@
   const MAX_GAMES           = 500;
   const MAX_NAME_LEN        = 20;
   const RATE_LIMIT_WINDOW_S = 60;     // seconds
-  const RATE_LIMIT_MAX      = 15;     // writes per window per device
+  const RATE_LIMIT_MAX      = 10;     // writes per window per device
 
   // ===========================================================
   // i18n strings
@@ -1166,25 +1266,97 @@
       // Setup banner
       setup_title: '⚠️ Firebase not configured',
       setup_text:  'Open this file and paste your firebaseConfig into FIREBASE_CONFIG. See the setup comment block in index.html.',
-      // Standard rules text
-      rules: [
-        { id: 'setup',    title: 'Setup',
-          body: '10 plastic cups arranged in a triangle on each end of the table. Cups filled (water for non-drinking play). Teams stand at opposite ends. 2v2 or 3v3.' },
-        { id: 'shoot',    title: 'How to shoot',
-          body: 'Players take turns. Each team gets one throw per player per turn. Shoot the ping-pong ball into the opposing team\'s cups. Elbow stays behind the table edge.' },
-        { id: 'scoring',  title: 'Scoring & elimination',
-          body: 'A ball that lands in a cup eliminates that cup. The opposing team drinks (or the cup is just removed in non-drinking play). First team to eliminate all opponent cups wins.' },
-        { id: 'rerack',   title: 'Re-racks',
-          body: 'Each team may call ONE re-rack per game when only certain cup counts remain (typically 6, 4, 3, 2, 1). Asked between turns.' },
-        { id: 'bounce',   title: 'Bounce shots',
-          body: 'A ball bounced off the table into a cup counts as TWO cups eliminated — but defenders may swat a bounced ball away mid-air.' },
+      // Full rule categories (from house rules v1.0)
+      ruleCategories: [
+        {
+          id: 'basics', emoji: '📋', title: 'The Basics',
+          rules: [
+            {
+              id: 'setup', title: '1.1 Setup',
+              body: 'Place a standard beer pong table with one team on each end. Each team arranges 10 cups in a triangle (4–3–2–1) at their end, filled to an agreed level. Two teams of two face each other. Each team has one ball per player per turn.',
+            },
+            {
+              id: 'kickoff', title: '1.2 Kick-off — Who Shoots First',
+              body: 'Before the game begins, both teams play Rock–Paper–Scissors. The winning team chooses whether to shoot first or second.',
+            },
+            {
+              id: 'turn', title: '1.3 Turn Structure',
+              body: 'Teams alternate turns. Each player throws once, independently. The elbow must stay behind the table edge — no leaning over.',
+              note: 'Cups hit are NOT removed until both players have finished their throws (or both have missed). Only then does the defending team drink and remove hit cups.',
+            },
+            {
+              id: 'bonus', title: '1.4 Consecutive Throw Bonus',
+              body: 'If a player hits a cup, they throw again. There is no limit to how many times a single player can chain throws as long as they keep hitting. Combo tracking (see 2.1) is always counted per individual player independently.',
+            },
+            {
+              id: 'winning', title: '1.5 Winning & The Redemption Shot',
+              body: 'A team wins when all opposing cups are eliminated. The losing team is always entitled to one final Redemption Round — each player gets one shot. If the redemption shot(s) miss, the losing team loses. If one lands, see Rule 3.1.',
+              note: 'The redemption shot always applies — including in Instant Win cases (Death Cup, Bomb, etc.). "Instant Win" triggers the end condition immediately, but the losing team still gets their redemption round.',
+            },
+          ]
+        },
+        {
+          id: 'advanced', emoji: '⚡', title: 'Advanced Rules',
+          rules: [
+            {
+              id: 'doublehit', title: '2.1-A Double Hit — Same Cup Twice → Whole Row Gone',
+              body: 'If a single player hits the same cup twice in a row during their turn, the entire row that cup belongs to is eliminated.',
+              note: 'Teammates throw independently. If Player A and Player B each hit the same cup, that does NOT count as a double hit. Only consecutive hits by the same individual count.',
+            },
+            {
+              id: 'bomb', title: '2.1-B The Bomb — Same Cup Multiple Times',
+              body: 'Hitting the same cup multiple times by the same player triggers escalating effects:',
+              table: [
+                { hits: '2× (any)', outcome: 'Whole row eliminated' },
+                { hits: '3× before merge', outcome: 'Bomb — that cup + all directly adjacent cups gone' },
+                { hits: '3× after merge', outcome: 'Instant Win (redemption applies)' },
+                { hits: '4× before merge', outcome: 'Instant Win (redemption applies)' },
+              ],
+            },
+            {
+              id: 'stacking', title: '2.1-C Combo Stacking',
+              body: 'Combo effects can be stacked within a single turn. For example: a player hits a cup in Row A twice (→ Row A gone) and then a cup in Row B twice (→ Row B gone). Both consequences apply simultaneously at the end of the turn.',
+            },
+            {
+              id: 'merge', title: '2.2 The Merge',
+              body: 'Each team may request the opposing team to push their remaining cups together once per match. This can be called at any point — typically at 6 or 4 cups remaining. The opposing team must comply immediately.',
+              note: 'Post-merge: the threshold to trigger an Instant Win by hitting the same cup drops from 4× to 3×. All other combo rules remain unchanged.',
+            },
+            {
+              id: 'trick', title: '2.3 The Trick Shot',
+              body: 'If a player misses and the ball bounces or rolls back onto their own half of the table (past the center line, by any trajectory), they may grab the ball and attempt a Trick Shot — behind the back, between the legs, eyes closed, etc. A hit removes the cup as normal. A miss ends the turn.',
+              note: 'The ball must cross to your side on its own — you cannot interfere while it is on the opponent\'s side.',
+            },
+          ]
+        },
+        {
+          id: 'special', emoji: '⚠️', title: 'Special Cases',
+          rules: [
+            {
+              id: 'redemption', title: '3.1 Redemption Procedure',
+              body: 'If the losing team hits their redemption shot(s), the game continues: all remaining cups of the losing team stay. Cups hit by the winning team in the final round that triggered game-end are reinstated. The team that just hit the redemption shot takes the next turn.',
+            },
+            {
+              id: 'blow', title: '3.2 Blowing the Ball Out (Spinning Balls)',
+              body: 'If a ball lands in a cup and is visibly spinning on the rim without submerging, a defending player may blow it out. This is legal, but considered unsportsmanlike and firmly frowned upon.',
+            },
+            {
+              id: 'knocked', title: '3.3 The Knocked Cup',
+              body: 'If a thrown ball strikes a cup and causes it to tip or fall over, the hit still counts and the cup is eliminated.',
+              note: 'Exception: if a player deliberately knocked a cup over in an obviously unsportsmanlike manner, that player is disqualified. This is a judgment call by mutual agreement of both teams.',
+            },
+            {
+              id: 'owncup', title: '3.4 Hitting Your Own Cup (Own Goal)',
+              body: 'If a player accidentally shoots into one of their own team\'s cups, that cup must be drunk and removed. However, the player still gets to throw again — just as if they had hit an opponent\'s cup. The hit still counts toward combos.',
+            },
+            {
+              id: 'death', title: '3.5 The Death Cup',
+              body: 'If a player is actively drinking a cup — it is in their hand — and an opponent lands a ball into that cup, the shooting team wins instantly. The redemption shot still applies.',
+              note: 'Warning: Set your cup down the moment you are done drinking. Holding it while distracted is a liability.',
+            },
+          ]
+        },
       ],
-      house: [
-        { title: 'House rule #1', body: 'Edit me' },
-        { title: 'House rule #2', body: 'Edit me' },
-        { title: 'House rule #3', body: 'Edit me' },
-      ],
-      house_label: 'House',
     },
     de: {
       logo_sub: 'Live-Turnier',
@@ -1242,24 +1414,97 @@
       nav_lb: 'Rangliste', nav_record: 'Eintragen', nav_join: 'Mitspielen', nav_rules: 'Regeln',
       setup_title: '⚠️ Firebase nicht konfiguriert',
       setup_text:  'Öffne diese Datei und füge deine firebaseConfig in FIREBASE_CONFIG ein. Siehe Setup-Kommentar oben in der index.html.',
-      rules: [
-        { id: 'setup',    title: 'Aufbau',
-          body: '10 Plastikbecher in Dreieck-Form an jedem Tischende. Becher gefüllt (Wasser bei alkoholfreier Variante). Teams stehen sich gegenüber. 2v2 oder 3v3.' },
-        { id: 'shoot',    title: 'So wird geworfen',
-          body: 'Teams wechseln sich ab. Jedes Team-Mitglied wirft einmal pro Runde. Ziel: Tischtennisball in einen gegnerischen Becher werfen. Ellbogen bleibt hinter der Tischkante.' },
-        { id: 'scoring',  title: 'Punkte & Ausscheiden',
-          body: 'Ein Ball im Becher = Becher raus. Das gegnerische Team trinkt (oder Becher wird einfach entfernt). Erstes Team ohne Becher verliert.' },
-        { id: 'rerack',   title: 'Re-Racks',
-          body: 'Jedes Team darf EIN Re-Rack pro Spiel ansagen, wenn bestimmte Becherzahlen übrig sind (typisch 6, 4, 3, 2, 1). Zwischen den Würfen ansagen.' },
-        { id: 'bounce',   title: 'Bounce-Shots',
-          body: 'Ein Ball, der vom Tisch in einen Becher abprallt, zählt als ZWEI Becher — aber Verteidiger dürfen den abgeprallten Ball aus der Luft wegschlagen.' },
+      // Vollständige Regelkategorien (Hausregeln v1.0)
+      ruleCategories: [
+        {
+          id: 'basics', emoji: '📋', title: 'Die Grundregeln',
+          rules: [
+            {
+              id: 'setup', title: '1.1 Aufbau',
+              body: 'Tisch aufstellen, jedes Team an einem Ende. Jedes Team stellt 10 Becher in Dreiecksform (4–3–2–1) auf, gefüllt nach Absprache. Zwei Teams à zwei Spieler stehen sich gegenüber. Jedes Team hat einen Ball pro Spieler pro Zug.',
+            },
+            {
+              id: 'kickoff', title: '1.2 Anwurf — Wer beginnt',
+              body: 'Vor dem Spiel spielen beide Teams Schere–Stein–Papier. Das Gewinner-Team wählt, ob es zuerst oder zuletzt wirft.',
+            },
+            {
+              id: 'turn', title: '1.3 Zugstruktur',
+              body: 'Teams wechseln sich ab. Jeder Spieler wirft einmal, unabhängig voneinander. Der Ellbogen muss hinter der Tischkante bleiben — kein Lehnen über den Tisch.',
+              note: 'Getroffene Becher werden NICHT sofort entfernt — erst nachdem beide Spieler geworfen haben (oder beide daneben). Dann trinkt das verteidigende Team und entfernt die Becher.',
+            },
+            {
+              id: 'bonus', title: '1.4 Trefferbonus — Nochmal werfen',
+              body: 'Trifft ein Spieler einen Becher, darf er erneut werfen. Es gibt keine Begrenzung, wie oft man hintereinander treffen kann. Combo-Tracking (siehe 2.1) gilt immer pro Spieler einzeln.',
+            },
+            {
+              id: 'winning', title: '1.5 Sieg & Rettungswurf',
+              body: 'Ein Team gewinnt, wenn alle gegnerischen Becher eliminiert sind. Das verlierende Team hat immer Anspruch auf eine letzte Rettungsrunde — jeder Spieler bekommt einen Wurf. Treffen alle Rettungswürfe daneben, verliert das Team. Trifft einer, siehe Regel 3.1.',
+              note: 'Der Rettungswurf gilt immer — auch bei Sofortsiegen (Death Cup, Bombe usw.). „Sofortsieg" löst die Endbedingung sofort aus, aber das verlierende Team bekommt trotzdem seine Rettungsrunde.',
+            },
+          ]
+        },
+        {
+          id: 'advanced', emoji: '⚡', title: 'Fortgeschrittene Regeln',
+          rules: [
+            {
+              id: 'doublehit', title: '2.1-A Doppeltreffer — Selber Becher zweimal → Ganze Reihe weg',
+              body: 'Trifft ein Spieler in seinem Zug denselben Becher zweimal hintereinander, wird die gesamte Reihe, zu der dieser Becher gehört, eliminiert.',
+              note: 'Mitspieler werfen unabhängig. Trifft Spieler A und Spieler B denselben Becher, gilt das NICHT als Doppeltreffer. Nur aufeinanderfolgende Treffer desselben Spielers zählen.',
+            },
+            {
+              id: 'bomb', title: '2.1-B Die Bombe — Selber Becher mehrfach',
+              body: 'Trifft derselbe Spieler denselben Becher mehrfach, gibt es eskalierte Effekte:',
+              table: [
+                { hits: '2× (beliebig)', outcome: 'Ganze Reihe eliminiert' },
+                { hits: '3× vor dem Merge', outcome: 'Bombe — dieser Becher + alle direkt angrenzenden Becher weg' },
+                { hits: '3× nach dem Merge', outcome: 'Sofortsieg (Rettungswurf gilt)' },
+                { hits: '4× vor dem Merge', outcome: 'Sofortsieg (Rettungswurf gilt)' },
+              ],
+            },
+            {
+              id: 'stacking', title: '2.1-C Combo-Stacking',
+              body: 'Combo-Effekte können in einem einzigen Zug gestapelt werden. Beispiel: ein Spieler trifft einen Becher in Reihe A zweimal (→ Reihe A weg) und dann einen Becher in Reihe B zweimal (→ Reihe B weg). Beide Folgen gelten gleichzeitig am Ende des Zuges.',
+            },
+            {
+              id: 'merge', title: '2.2 Der Merge — Becher zusammenschieben',
+              body: 'Jedes Team darf einmal pro Spiel verlangen, dass das gegnerische Team seine verbleibenden Becher zusammenschiebt. Kann jederzeit angefordert werden — typischerweise bei 6 oder 4 verbleibenden Bechern. Das gegnerische Team muss sofort nachkommen.',
+              note: 'Nach dem Merge: Die Schwelle für einen Sofortsieg durch mehrfaches Treffen desselben Bechers sinkt von 4× auf 3×. Alle anderen Combo-Regeln bleiben unverändert.',
+            },
+            {
+              id: 'trick', title: '2.3 Der Trick Shot',
+              body: 'Wirft ein Spieler daneben und der Ball rollt oder springt auf die eigene Tischhälfte zurück (hinter die Mittellinie, auf beliebigem Weg), darf er den Ball schnappen und einen Trick Shot versuchen — hinter dem Rücken, zwischen den Beinen, mit geschlossenen Augen usw. Ein Treffer entfernt den Becher normal. Ein Fehlwurf beendet den Zug.',
+              note: 'Der Ball muss die eigene Seite selbstständig erreichen — man darf nicht eingreifen, solange er noch auf der Gegnerseite ist.',
+            },
+          ]
+        },
+        {
+          id: 'special', emoji: '⚠️', title: 'Sonderfälle',
+          rules: [
+            {
+              id: 'redemption', title: '3.1 Rettungsablauf',
+              body: 'Trifft das verlierende Team seinen Rettungswurf, geht das Spiel weiter: Alle verbleibenden Becher des verlierenden Teams bleiben stehen. Die im letzten Zug getroffenen Becher des Gewinnerteams werden wieder hingestellt. Das Team, das den Rettungswurf traf, ist als nächstes dran.',
+            },
+            {
+              id: 'blow', title: '3.2 Ball rausblasen (kreisender Ball)',
+              body: 'Landet ein Ball in einem Becher und dreht sich sichtbar auf dem Rand, ohne unterzugehen, darf ein Verteidiger ihn rausblasen. Dies ist erlaubt, gilt aber als unsportlich und wird klar missbilligt.',
+            },
+            {
+              id: 'knocked', title: '3.3 Der umgeworfene Becher',
+              body: 'Trifft ein Wurf einen Becher und dieser kippt oder fällt um, zählt der Treffer trotzdem und der Becher ist eliminiert.',
+              note: 'Ausnahme: Wirft ein Spieler einen Becher offensichtlich absichtlich in unsportlicher Absicht um, ist dieser Spieler disqualifiziert. Dies ist eine Ermessensentscheidung beider Teams gemeinsam.',
+            },
+            {
+              id: 'owncup', title: '3.4 Eigentor',
+              body: 'Trifft ein Spieler versehentlich einen eigenen Becher, muss dieser getrunken und entfernt werden. Jedoch darf der Spieler trotzdem nochmal werfen — genau wie bei einem Treffer beim Gegner. Der Treffer zählt auch für Combos.',
+            },
+            {
+              id: 'death', title: '3.5 Der Death Cup',
+              body: 'Trinkt ein Spieler gerade einen Becher — hält ihn aktiv in der Hand — und ein Gegner trifft genau diesen Becher, gewinnt das werfende Team sofort. Der Rettungswurf gilt trotzdem.',
+              note: 'Warnung: Stell deinen Becher sofort ab, wenn du fertig getrunken hast. Ihn abgelenkt in der Hand zu halten, ist ein Risiko.',
+            },
+          ]
+        },
       ],
-      house: [
-        { title: 'Hausregel #1', body: 'Edit me' },
-        { title: 'Hausregel #2', body: 'Edit me' },
-        { title: 'Hausregel #3', body: 'Edit me' },
-      ],
-      house_label: 'Haus',
     }
   };
 
@@ -1563,30 +1808,117 @@
   }
 
   // ===========================================================
-  // Render: Rules
+  // Render: Rules (collapsible categories)
   // ===========================================================
   function renderRules() {
-    const root  = $('#rules-content');
+    const root = $('#rules-content');
     root.innerHTML = '';
-    const dict  = STRINGS[state.lang] || STRINGS.en;
-    dict.rules.forEach(r => {
-      const block = document.createElement('div');
-      block.className = 'rule-block';
-      const h = document.createElement('h3'); h.textContent = r.title;
-      const p = document.createElement('p');  p.textContent = r.body;
-      block.appendChild(h); block.appendChild(p);
-      root.appendChild(block);
-    });
-    dict.house.forEach(r => {
-      const block = document.createElement('div');
-      block.className = 'rule-block house';
-      const h = document.createElement('h3');
-      h.textContent = '🍻 ' + r.title;
-      const p = document.createElement('p');
-      p.className = 'placeholder';
-      p.textContent = r.body;
-      block.appendChild(h); block.appendChild(p);
-      root.appendChild(block);
+    const dict = STRINGS[state.lang] || STRINGS.en;
+
+    (dict.ruleCategories || []).forEach((cat, catIdx) => {
+      const catEl = document.createElement('div');
+      catEl.className = 'rule-category' + (catIdx === 0 ? ' open' : '');
+      catEl.dataset.catId = cat.id;
+
+      // Header
+      const header = document.createElement('div');
+      header.className = 'rule-category-header';
+      header.setAttribute('role', 'button');
+      header.setAttribute('aria-expanded', catIdx === 0 ? 'true' : 'false');
+
+      const left = document.createElement('div');
+      left.className = 'rule-category-header-left';
+
+      const emoji = document.createElement('span');
+      emoji.className = 'rule-category-emoji';
+      emoji.textContent = cat.emoji;
+
+      const titleWrap = document.createElement('div');
+      const titleEl = document.createElement('div');
+      titleEl.className = 'rule-category-title';
+      titleEl.textContent = cat.title;
+      const countEl = document.createElement('div');
+      countEl.className = 'rule-category-count';
+      countEl.textContent = cat.rules.length + (state.lang === 'de' ? ' Regeln' : ' rules');
+      titleWrap.appendChild(titleEl);
+      titleWrap.appendChild(countEl);
+
+      left.appendChild(emoji);
+      left.appendChild(titleWrap);
+
+      const chevron = document.createElement('span');
+      chevron.className = 'rule-chevron';
+      chevron.textContent = '▼';
+
+      header.appendChild(left);
+      header.appendChild(chevron);
+
+      // Body
+      const body = document.createElement('div');
+      body.className = 'rule-category-body';
+
+      const inner = document.createElement('div');
+      inner.className = 'rule-category-inner';
+
+      cat.rules.forEach(r => {
+        const block = document.createElement('div');
+        block.className = 'rule-block ' + cat.id;
+
+        const h = document.createElement('h3');
+        h.textContent = r.title;
+        block.appendChild(h);
+
+        const p = document.createElement('p');
+        p.textContent = r.body;
+        block.appendChild(p);
+
+        if (r.table) {
+          const tbl = document.createElement('table');
+          tbl.className = 'rule-table';
+          const thead = document.createElement('thead');
+          const hrow = document.createElement('tr');
+          ['Hits', 'Outcome'].forEach(lbl => {
+            const th = document.createElement('th');
+            th.textContent = state.lang === 'de'
+              ? (lbl === 'Hits' ? 'Treffer' : 'Ergebnis')
+              : lbl;
+            hrow.appendChild(th);
+          });
+          thead.appendChild(hrow);
+          tbl.appendChild(thead);
+          const tbody = document.createElement('tbody');
+          r.table.forEach(row => {
+            const tr = document.createElement('tr');
+            const td1 = document.createElement('td'); td1.textContent = row.hits;
+            const td2 = document.createElement('td'); td2.textContent = row.outcome;
+            tr.appendChild(td1); tr.appendChild(td2);
+            tbody.appendChild(tr);
+          });
+          tbl.appendChild(tbody);
+          block.appendChild(tbl);
+        }
+
+        if (r.note) {
+          const note = document.createElement('div');
+          note.className = 'rule-note';
+          note.textContent = r.note;
+          block.appendChild(note);
+        }
+
+        inner.appendChild(block);
+      });
+
+      body.appendChild(inner);
+      catEl.appendChild(header);
+      catEl.appendChild(body);
+      root.appendChild(catEl);
+
+      // Toggle
+      header.addEventListener('click', () => {
+        const isOpen = catEl.classList.contains('open');
+        catEl.classList.toggle('open', !isOpen);
+        header.setAttribute('aria-expanded', String(!isOpen));
+      });
     });
   }
 
