@@ -10,11 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Bungee+Inline&family=Sora:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🏓%3C/text%3E%3C/svg%3E">
 <style>
-  /* ==========================================================
-     PASCAL'S PARTY BEERPONG CUP
-     Single-file static app. Hosted on GitHub Pages.
-     Database: Firebase Realtime Database (Spark / free).
-     ========================================================== */
+
 
   :root {
     --bg-0:        #08070a;
@@ -805,7 +801,6 @@
     margin-top: 18px;
   }
 
-  /* old rule-block styles replaced above */
 
   /* ============ Collapsible rule categories ============ */
   .rule-category {
@@ -1166,8 +1161,7 @@
 
   <script type="module">
   /* =====================================================================
-   * Pascal's Party Beerpong Cup — application logic.
-   * See setup instructions in the comment block above this script.
+       Application logic
    * ===================================================================== */
 
   import { initializeApp }
@@ -1175,9 +1169,7 @@
   import { getDatabase, ref, push, set, update, remove, onValue }
     from "https://www.gstatic.com/firebasejs/10.13.2/firebase-database.js";
 
-  /* =====================================================================
-   * 🔧  PASTE YOUR FIREBASE CONFIG HERE
-   * --------------------------------------------------------------------- */
+
   const FIREBASE_CONFIG = {
     apiKey: "AIzaSyBje0p7tvlamJq0irzc0UQr657a5hiw-oE",
     authDomain: "party-db-c8003.firebaseapp.com",
