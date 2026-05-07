@@ -1276,12 +1276,12 @@
               body: 'Place a standard beer pong table with one team on each end. Each team arranges 10 cups in a triangle (4–3–2–1) at their end, filled to an agreed level. Two teams of two face each other. Each team has one ball per player per turn.',
             },
             {
-              id: 'kickoff', title: '1.2 Kick-off — Who Shoots First',
+              id: 'kickoff', title: '1.2 Kick-off: Who Shoots First',
               body: 'Before the game begins, both teams play Rock–Paper–Scissors. The winning team chooses whether to shoot first or second.',
             },
             {
               id: 'turn', title: '1.3 Turn Structure',
-              body: 'Teams alternate turns. Each player throws once, independently. The elbow must stay behind the table edge — no leaning over.',
+              body: 'Teams alternate turns. Each player throws once, independently. The elbow must stay behind the table edge. No leaning over!',
               note: 'Cups hit are NOT removed until both players have finished their throws (or both have missed). Only then does the defending team drink and remove hit cups.',
             },
             {
@@ -1290,8 +1290,8 @@
             },
             {
               id: 'winning', title: '1.5 Winning & The Redemption Shot',
-              body: 'A team wins when all opposing cups are eliminated. The losing team is always entitled to one final Redemption Round — each player gets one shot. If the redemption shot(s) miss, the losing team loses. If one lands, see Rule 3.1.',
-              note: 'The redemption shot always applies — including in Instant Win cases (Death Cup, Bomb, etc.). "Instant Win" triggers the end condition immediately, but the losing team still gets their redemption round.',
+              body: 'A team wins when all opposing cups are eliminated. The losing team is always entitled to one final Redemption shot: one SINGLE shot by one player. If the redemption shot misses, the losing team loses. If it lands, see Rule 3.1.',
+              note: 'The redemption shot always applies: including in Instant Win cases (Death Cup, Bomb, etc.). "Instant Win" triggers the end condition immediately, but the losing team still gets their redemption shot.',
             },
           ]
         },
@@ -1299,16 +1299,16 @@
           id: 'advanced', emoji: '⚡', title: 'Advanced Rules',
           rules: [
             {
-              id: 'doublehit', title: '2.1-A Double Hit — Same Cup Twice → Whole Row Gone',
+              id: 'doublehit', title: '2.1-A Double Hit: Same Cup Twice → Whole Row Gone',
               body: 'If a single player hits the same cup twice in a row during their turn, the entire row that cup belongs to is eliminated.',
               note: 'Teammates throw independently. If Player A and Player B each hit the same cup, that does NOT count as a double hit. Only consecutive hits by the same individual count.',
             },
             {
-              id: 'bomb', title: '2.1-B The Bomb — Same Cup Multiple Times',
+              id: 'bomb', title: '2.1-B The Bomb: Same Cup Multiple Times',
               body: 'Hitting the same cup multiple times by the same player triggers escalating effects:',
               table: [
                 { hits: '2× (any)', outcome: 'Whole row eliminated' },
-                { hits: '3× before merge', outcome: 'Bomb — that cup + all directly adjacent cups gone' },
+                { hits: '3× before merge', outcome: 'Bomb: that cup + all directly adjacent cups gone' },
                 { hits: '3× after merge', outcome: 'Instant Win (redemption applies)' },
                 { hits: '4× before merge', outcome: 'Instant Win (redemption applies)' },
               ],
@@ -1319,13 +1319,13 @@
             },
             {
               id: 'merge', title: '2.2 The Merge',
-              body: 'Each team may request the opposing team to push their remaining cups together once per match. This can be called at any point — typically at 6 or 4 cups remaining. The opposing team must comply immediately.',
+              body: 'Each team may request the opposing team to push their remaining cups together once per match. This can be called at any point (typically at 6 or 4 cups remaining). The opposing team must comply immediately.',
               note: 'Post-merge: the threshold to trigger an Instant Win by hitting the same cup drops from 4× to 3×. All other combo rules remain unchanged.',
             },
             {
               id: 'trick', title: '2.3 The Trick Shot',
-              body: 'If a player misses and the ball bounces or rolls back onto their own half of the table (past the center line, by any trajectory), they may grab the ball and attempt a Trick Shot — behind the back, between the legs, eyes closed, etc. A hit removes the cup as normal. A miss ends the turn.',
-              note: 'The ball must cross to your side on its own — you cannot interfere while it is on the opponent\'s side.',
+              body: 'If a player misses and the ball bounces or rolls back onto their own half of the table (past the center line, by any trajectory), they may grab the ball and attempt a Trick Shot (e.g. behind the back, between the legs, eyes closed, etc.). A hit removes the cup as normal. A miss ends the turn.',
+              note: 'The ball must cross to your side on its own! You cannot interfere while it is on the opponent\'s side.',
             },
           ]
         },
@@ -1334,7 +1334,7 @@
           rules: [
             {
               id: 'redemption', title: '3.1 Redemption Procedure',
-              body: 'If the losing team hits their redemption shot(s), the game continues: all remaining cups of the losing team stay. Cups hit by the winning team in the final round that triggered game-end are reinstated. The team that just hit the redemption shot takes the next turn.',
+              body: 'If the losing team hits their redemption shot, the game continues: all remaining cups of the losing team stay. Cups hit by the winning team in the final round that triggered game-end are reinstated. The team that just hit the redemption shot takes the next turn.',
             },
             {
               id: 'blow', title: '3.2 Blowing the Ball Out (Spinning Balls)',
@@ -1347,11 +1347,11 @@
             },
             {
               id: 'owncup', title: '3.4 Hitting Your Own Cup (Own Goal)',
-              body: 'If a player accidentally shoots into one of their own team\'s cups, that cup must be drunk and removed. However, the player still gets to throw again — just as if they had hit an opponent\'s cup. The hit still counts toward combos.',
+              body: 'If a player accidentally shoots into one of their own team\'s cups, that cup must be drunk and removed. However, the player still gets to throw again (just as if they had hit an opponent\'s cup). The hit still counts toward combos.',
             },
             {
               id: 'death', title: '3.5 The Death Cup',
-              body: 'If a player is actively drinking a cup — it is in their hand — and an opponent lands a ball into that cup, the shooting team wins instantly. The redemption shot still applies.',
+              body: 'If a player is actively drinking a cup (it is in their hand) and an opponent lands a ball into that cup, the shooting team wins instantly. The redemption shot still applies.',
               note: 'Warning: Set your cup down the moment you are done drinking. Holding it while distracted is a liability.',
             },
           ]
@@ -1424,22 +1424,22 @@
               body: 'Tisch aufstellen, jedes Team an einem Ende. Jedes Team stellt 10 Becher in Dreiecksform (4–3–2–1) auf, gefüllt nach Absprache. Zwei Teams à zwei Spieler stehen sich gegenüber. Jedes Team hat einen Ball pro Spieler pro Zug.',
             },
             {
-              id: 'kickoff', title: '1.2 Anwurf — Wer beginnt',
+              id: 'kickoff', title: '1.2 Anwurf: Wer beginnt',
               body: 'Vor dem Spiel spielen beide Teams Schere–Stein–Papier. Das Gewinner-Team wählt, ob es zuerst oder zuletzt wirft.',
             },
             {
               id: 'turn', title: '1.3 Zugstruktur',
-              body: 'Teams wechseln sich ab. Jeder Spieler wirft einmal, unabhängig voneinander. Der Ellbogen muss hinter der Tischkante bleiben — kein Lehnen über den Tisch.',
-              note: 'Getroffene Becher werden NICHT sofort entfernt — erst nachdem beide Spieler geworfen haben (oder beide daneben). Dann trinkt das verteidigende Team und entfernt die Becher.',
+              body: 'Teams wechseln sich ab. Jeder Spieler wirft einmal, unabhängig voneinander. Der Ellbogen muss hinter der Tischkante bleiben. Kein Lehnen über den Tisch!',
+              note: 'Getroffene Becher werden NICHT sofort entfernt! Erst nachdem beide Spieler geworfen haben (oder beide daneben). Dann trinkt das verteidigende Team und entfernt die Becher.',
             },
             {
-              id: 'bonus', title: '1.4 Trefferbonus — Nochmal werfen',
+              id: 'bonus', title: '1.4 Trefferbonus: Nochmal werfen',
               body: 'Trifft ein Spieler einen Becher, darf er erneut werfen. Es gibt keine Begrenzung, wie oft man hintereinander treffen kann. Combo-Tracking (siehe 2.1) gilt immer pro Spieler einzeln.',
             },
             {
-              id: 'winning', title: '1.5 Sieg & Rettungswurf',
-              body: 'Ein Team gewinnt, wenn alle gegnerischen Becher eliminiert sind. Das verlierende Team hat immer Anspruch auf eine letzte Rettungsrunde — jeder Spieler bekommt einen Wurf. Treffen alle Rettungswürfe daneben, verliert das Team. Trifft einer, siehe Regel 3.1.',
-              note: 'Der Rettungswurf gilt immer — auch bei Sofortsiegen (Death Cup, Bombe usw.). „Sofortsieg" löst die Endbedingung sofort aus, aber das verlierende Team bekommt trotzdem seine Rettungsrunde.',
+              id: 'winning', title: '1.5 Sieg & Redemption Shot',
+              body: 'Ein Team gewinnt, wenn alle gegnerischen Becher eliminiert sind. Das verlierende Team hat immer Anspruch auf einen letzten Redemption Shot. Geht der Redemption Shot daneben, verliert das Team. Trifft er, siehe Regel 3.1.',
+              note: 'Der Redemption Shot gilt immer; auch bei Sofortsiegen (Death Cup, Bombe usw.). „Sofortsieg" löst die Endbedingung sofort aus, aber das verlierende Team bekommt trotzdem seinen Redemption Shot.',
             },
           ]
         },
@@ -1447,18 +1447,18 @@
           id: 'advanced', emoji: '⚡', title: 'Fortgeschrittene Regeln',
           rules: [
             {
-              id: 'doublehit', title: '2.1-A Doppeltreffer — Selber Becher zweimal → Ganze Reihe weg',
+              id: 'doublehit', title: '2.1-A Doppeltreffer: Selber Becher zweimal → Ganze Reihe weg',
               body: 'Trifft ein Spieler in seinem Zug denselben Becher zweimal hintereinander, wird die gesamte Reihe, zu der dieser Becher gehört, eliminiert.',
               note: 'Mitspieler werfen unabhängig. Trifft Spieler A und Spieler B denselben Becher, gilt das NICHT als Doppeltreffer. Nur aufeinanderfolgende Treffer desselben Spielers zählen.',
             },
             {
-              id: 'bomb', title: '2.1-B Die Bombe — Selber Becher mehrfach',
+              id: 'bomb', title: '2.1-B Die Bombe: Selber Becher mehrfach',
               body: 'Trifft derselbe Spieler denselben Becher mehrfach, gibt es eskalierte Effekte:',
               table: [
                 { hits: '2× (beliebig)', outcome: 'Ganze Reihe eliminiert' },
-                { hits: '3× vor dem Merge', outcome: 'Bombe — dieser Becher + alle direkt angrenzenden Becher weg' },
-                { hits: '3× nach dem Merge', outcome: 'Sofortsieg (Rettungswurf gilt)' },
-                { hits: '4× vor dem Merge', outcome: 'Sofortsieg (Rettungswurf gilt)' },
+                { hits: '3× vor dem Merge', outcome: 'Bombe: dieser Becher + alle direkt angrenzenden Becher weg' },
+                { hits: '3× nach dem Merge', outcome: 'Sofortsieg (Redemption Shot gilt)' },
+                { hits: '4× vor dem Merge', outcome: 'Sofortsieg (Redemption Shot gilt)' },
               ],
             },
             {
@@ -1466,14 +1466,14 @@
               body: 'Combo-Effekte können in einem einzigen Zug gestapelt werden. Beispiel: ein Spieler trifft einen Becher in Reihe A zweimal (→ Reihe A weg) und dann einen Becher in Reihe B zweimal (→ Reihe B weg). Beide Folgen gelten gleichzeitig am Ende des Zuges.',
             },
             {
-              id: 'merge', title: '2.2 Der Merge — Becher zusammenschieben',
-              body: 'Jedes Team darf einmal pro Spiel verlangen, dass das gegnerische Team seine verbleibenden Becher zusammenschiebt. Kann jederzeit angefordert werden — typischerweise bei 6 oder 4 verbleibenden Bechern. Das gegnerische Team muss sofort nachkommen.',
-              note: 'Nach dem Merge: Die Schwelle für einen Sofortsieg durch mehrfaches Treffen desselben Bechers sinkt von 4× auf 3×. Alle anderen Combo-Regeln bleiben unverändert.',
+              id: 'merge', title: '2.2 Der Merge: Becher zusammenschieben',
+              body: 'Jedes Team darf einmal pro Spiel verlangen, dass das gegnerische Team seine verbleibenden Becher zusammenschiebt. Kann jederzeit angefordert werden (typischerweise bei 6 oder 4 verbleibenden Bechern).',
+              note: 'Nach dem zusammenschieben: Die Schwelle für einen Sofortsieg durch mehrfaches Treffen desselben Bechers sinkt von 4× auf 3×. Alle anderen Combo-Regeln bleiben unverändert.',
             },
             {
               id: 'trick', title: '2.3 Der Trick Shot',
-              body: 'Wirft ein Spieler daneben und der Ball rollt oder springt auf die eigene Tischhälfte zurück (hinter die Mittellinie, auf beliebigem Weg), darf er den Ball schnappen und einen Trick Shot versuchen — hinter dem Rücken, zwischen den Beinen, mit geschlossenen Augen usw. Ein Treffer entfernt den Becher normal. Ein Fehlwurf beendet den Zug.',
-              note: 'Der Ball muss die eigene Seite selbstständig erreichen — man darf nicht eingreifen, solange er noch auf der Gegnerseite ist.',
+              body: 'Wirft ein Spieler daneben und der Ball rollt oder springt auf die eigene Tischhälfte zurück (hinter die Mittellinie, auf beliebigem Weg), darf er den Ball schnappen und einen Trick Shot versuchen (Z.B.hinter dem Rücken, zwischen den Beinen, mit geschlossenen Augen usw.). Ein Treffer entfernt den Becher normal. Ein Fehlwurf beendet den Zug.',
+              note: 'Der Ball muss die eigene Seite selbstständig erreichen! Man darf nicht eingreifen, solange er noch auf der Gegnerseite ist.',
             },
           ]
         },
@@ -1482,7 +1482,7 @@
           rules: [
             {
               id: 'redemption', title: '3.1 Rettungsablauf',
-              body: 'Trifft das verlierende Team seinen Rettungswurf, geht das Spiel weiter: Alle verbleibenden Becher des verlierenden Teams bleiben stehen. Die im letzten Zug getroffenen Becher des Gewinnerteams werden wieder hingestellt. Das Team, das den Rettungswurf traf, ist als nächstes dran.',
+              body: 'Trifft das verlierende Team seinen Redemption Shot, geht das Spiel weiter: Alle verbleibenden Becher des verlierenden Teams bleiben stehen. Die im letzten Zug getroffenen Becher des Gewinnerteams werden wieder hingestellt. Das Team, das den Redemption Shot traf, ist als nächstes dran.',
             },
             {
               id: 'blow', title: '3.2 Ball rausblasen (kreisender Ball)',
@@ -1495,11 +1495,11 @@
             },
             {
               id: 'owncup', title: '3.4 Eigentor',
-              body: 'Trifft ein Spieler versehentlich einen eigenen Becher, muss dieser getrunken und entfernt werden. Jedoch darf der Spieler trotzdem nochmal werfen — genau wie bei einem Treffer beim Gegner. Der Treffer zählt auch für Combos.',
+              body: 'Trifft ein Spieler versehentlich einen eigenen Becher, muss dieser getrunken und entfernt werden. Jedoch darf der Spieler trotzdem nochmal werfen; genau wie bei einem Treffer beim Gegner. Der Treffer zählt auch für Combos.',
             },
             {
               id: 'death', title: '3.5 Der Death Cup',
-              body: 'Trinkt ein Spieler gerade einen Becher — hält ihn aktiv in der Hand — und ein Gegner trifft genau diesen Becher, gewinnt das werfende Team sofort. Der Rettungswurf gilt trotzdem.',
+              body: 'Trinkt ein Spieler gerade einen Becher (hält ihn aktiv in der Hand) und ein Gegner trifft genau diesen Becher, gewinnt das werfende Team sofort. Der Redemption Shot gilt trotzdem.',
               note: 'Warnung: Stell deinen Becher sofort ab, wenn du fertig getrunken hast. Ihn abgelenkt in der Hand zu halten, ist ein Risiko.',
             },
           ]
